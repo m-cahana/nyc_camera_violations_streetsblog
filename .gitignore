@@ -93,6 +93,12 @@ coverage/
 # API files
 **/api.py
 
-# DO NOT exclude data files
+# DO NOT exclude data files that need to be read in production
 !static/data/
 !public/data/
+
+# do exclude some large datasets though
+**/Parking_Violations_Issued_-_Fiscal_Year_2024_20250115.csv
+**/school_zone_violations.csv
+**/parking_violations_agg.csv
+**/constants.py
