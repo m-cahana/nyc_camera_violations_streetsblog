@@ -1,6 +1,6 @@
 <script>
-	import Scrolly from "$lib/components/scrolly.svelte";
     import Footer from "$lib/components/footer.svelte";
+    import CirclePack from "$lib/components/circle_pack.svelte";
 </script>
 
 <main>
@@ -20,7 +20,7 @@
         violations.
     </p>
 
-	<Scrolly />
+	<CirclePack />
 
     <p>
         Even when limiting one's view to the top 50% of drivers, things
