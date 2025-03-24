@@ -1,0 +1,31 @@
+:root {
+  /* Color palette */
+  --primary-blue: rgb(56, 56, 241);
+  --secondary-blue: rgb(102, 102, 230);
+
+  /* You can add more global variables here */
+  --color-text: #333;
+  --color-background: #fff;
+  --font-primary: "Helvetica", Arial, sans-serif;
+}
+
+/* Global styles */
+body {
+  font-family: var(--font-primary);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  margin: 0;
+  padding: 0;
+}
+
+/* Global link styling */
+a,
+a:visited {
+  color: var(--secondary-blue);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  opacity: 0.8;
+}
