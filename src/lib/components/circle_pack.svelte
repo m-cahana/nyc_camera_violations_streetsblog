@@ -577,7 +577,6 @@
     /* Specific styles for each line */
     :global(.label-line-1) {
         font-weight: 600;
-        font-style: italic;
         font-size: 20px;
         font-family: 'Helvetica', sans-serif;
     }
