@@ -9,38 +9,15 @@
 
     <p>
         Last fiscal year, around 3 million drivers sped through school zones
-        in New York City, racking up nearly 8 million violations.
-    </p>
-
-    <p>
-        Each dot here represents a driver. As you move right, you'll see how
-        violations pile up across drivers. While most drivers were caught
-        speeding just once or twice, a small group of repeat offenders sped
-        rampantly, accounting for a disproportionate share of all the city's
-        violations.
+        in New York City, racking up nearly 8 million violations. In the graphic below, you can see a sample of these drivers. 
     </p>
 
 	<CirclePack />
 
     <p>
-        Even when limiting one's view to the top 50% of drivers, things
-        start to look disproportionate. These drivers all sped through
-        school zones at least twice last year, and together accounted for
-        over 80% of all violations.
+        [More graphics to be inserted below...]
     </p>
 
-
-    <p>
-        Things get even more extreme when you look at the very top of the
-        distribution. The top 1% of drivers - about 30,000 license plates -
-        accounted for over a tenth of school zone violations last year. All
-        told, they sped through school zones nearly 850,000 times.
-    </p>
-
-    <p>
-        Each of these top offenders sped at least 17 times. The worst
-        offender sped over 750 times - more than twice a day on average.
-    </p>
 
     <p>
         This small group of top offenders drove mostly around Brooklyn and
@@ -96,6 +73,18 @@
               >Dyker Heights.</a
             >
     </p>
+
+    <p>
+        You can see how some top offenders rampantly speed through the city
+        in this map. Unless officials enact policy to prevent this behavior,
+        there's every reason to expect speeding patterns like these to
+        persist in New York, putting the city's children and pedestrians of
+        all kind in danger.
+    </p>
+    
+    
+    
+    
     
     
     

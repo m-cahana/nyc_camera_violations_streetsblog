@@ -13,6 +13,7 @@
         violation_borough: string;
         fines: number;
         cum_share: number;
+        row_pct: number;
     }
 
     interface HierarchyNode {
@@ -35,16 +36,20 @@
         // Add scrolly content for sections
         scrollSections = [
             {
-                title: "Minor Offenders (1-2 violations)",
-                content: "Vehicles with 1-2 violations make up the majority of offenders. While these are minor offenders, they still contribute to unsafe conditions around schools."
+                title: "",
+                content: "Each circle here represents a driver caught by school zone speed cameras at least once. Circles are sized based on the driver's violation count; the more violations the driver committed, the larger the circle."
             },
             {
-                title: "Repeat Offenders (3-15 violations)",
-                content: "These vehicles have between 3 and 15 violations, showing a pattern of disregard for school zone safety. They represent drivers who repeatedly break the law."
+                title: "Minor Offenders",
+                content: "Drivers with 1-2 violations make up the vast majority of offenders. These drivers sped through school zones, but didn't seem to make a habit of it."
             },
             {
-                title: "Extreme Offenders (16+ violations)",
-                content: "The most dangerous vehicles have 16 or more violations. These extreme offenders pose a significant threat to children's safety in school zones."
+                title: "Repeat Offenders",
+                content: "Drivers with 3-15 violations show a more consistent pattern of disregard for school zone safety. They're a large minority, and account for most violations."
+            },
+            {
+                title: "Extreme Offenders",
+                content: "Drivers with 16+ violations represent the top 1% of offenders. They account for a disproportionately large share of all violations, and post the greatest threat to public safety."
             }
         ]
     } = $props();
@@ -68,6 +73,7 @@
                 violation_borough: d.violation_borough,
                 fines: +d.fines,
                 cum_share: +d.cum_share,
+                row_pct: +d.row_pct
             }));
         
         // Sort by violation count in descending order
@@ -100,7 +106,7 @@
             name: "All Violations",
             children: [
                 {
-                    name: `1-2 Violations\n${(((d3.max(singleViolations, d => d.cum_share) ?? 0) - (d3.min(singleViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of all violations`,
+                    name: `1-2 Violations\n${(((d3.max(singleViolations, d => d.cum_share) ?? 0) - (d3.min(singleViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of violations\n${(((d3.max(singleViolations, d => d.row_pct) ?? 0) - (d3.min(singleViolations, d => d.row_pct) ?? 0)) * 100).toFixed(0)}% of drivers`,
                     group: "single",
                     children: singleViolations.map(d => ({
                         name: d.plate_id,
@@ -113,7 +119,7 @@
                     }))
                 },
                 {
-                    name: `3-15 Violations\n${(((d3.max(mediumViolations, d => d.cum_share) ?? 0) - (d3.min(mediumViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of all violations`,
+                    name: `3-15 Violations\n${(((d3.max(mediumViolations, d => d.cum_share) ?? 0) - (d3.min(mediumViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of violations\n${(((d3.max(mediumViolations, d => d.row_pct) ?? 0) - (d3.min(mediumViolations, d => d.row_pct) ?? 0)) * 100).toFixed(0)}% of drivers`,
                     group: "medium",
                     children: mediumViolations.map(d => ({
                         name: d.plate_id,
@@ -126,7 +132,7 @@
                     }))
                 },
                 {
-                    name: `16+ Violations\n${(((d3.max(highViolations, d => d.cum_share) ?? 0) - (d3.min(highViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of all violations`,
+                    name: `16+ Violations\n${(((d3.max(highViolations, d => d.cum_share) ?? 0) - (d3.min(highViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of violations\n${(((d3.max(highViolations, d => d.row_pct) ?? 0) - (d3.min(highViolations, d => d.row_pct) ?? 0)) * 100).toFixed(0)}% of drivers`,
                     group: "high",
                     children: highViolations.map(d => ({
                         name: d.plate_id,
@@ -267,12 +273,19 @@
                 .attr("y", -12)
                 .text(lines[0]);
             
-            // Add second line (percentage) with a specific class
+            // Add second line (violation percentage) with a specific class
             textElement.append("tspan")
                 .attr("class", "label-line-2")
                 .attr("x", 0)
                 .attr("y", 12)
                 .text(lines[1]);
+
+             // Add third line (driver percentage) with a specific class
+             textElement.append("tspan")
+                .attr("class", "label-line-3")
+                .attr("x", 0)
+                .attr("y", 36)
+                .text(lines[2]);
         });
             
         // Now create separate highlight rectangles for each line
@@ -295,7 +308,7 @@
                 .attr("width", firstLineWidth + 20)
                 .attr("height", 26);
                 
-            // Measure the second line (percentage)
+            // Measure the second line (violation percentage)
             const secondLine = textElement.select(".label-line-2").node() as SVGTextElement;
             const secondLineWidth = secondLine.getComputedTextLength();
             
@@ -305,6 +318,18 @@
                 .attr("x", -secondLineWidth/2 - 10)
                 .attr("y", 0)
                 .attr("width", secondLineWidth + 20)
+                .attr("height", 24);
+
+            // Measure the third line (driver percentage)
+            const thirdLine = textElement.select(".label-line-3").node() as SVGTextElement;
+            const thirdLineWidth = thirdLine.getComputedTextLength();
+            
+            // Create highlight for third line
+            parentGroup.insert("rect", "text")
+                .attr("class", "label-background-line-3")
+                .attr("x", -thirdLineWidth/2 - 10)
+                .attr("y", 24)  // Changed from 0 to 24 to position correctly below the second highlight
+                .attr("width", thirdLineWidth + 20)
                 .attr("height", 24);
         });
     }
@@ -337,6 +362,9 @@
             
         // Apply specific highlights based on the current section
         if (currentSection === 0) {
+            // No highlighting or dimming for the initial overview section
+            // All circles remain at full opacity
+        } else if (currentSection === 1) {
             // Highlight single violations group
             svg.selectAll(".group-circle")
                 .filter((d: any) => d.data.group !== "single")
@@ -349,7 +377,7 @@
             svg.selectAll(".group-circle")
                 .filter((d: any) => d.data.group === "single")
                 .classed("highlighted", true);
-        } else if (currentSection === 1) {
+        } else if (currentSection === 2) {
             // Highlight medium violations group
             svg.selectAll(".group-circle")
                 .filter((d: any) => d.data.group !== "medium")
@@ -362,7 +390,7 @@
             svg.selectAll(".group-circle")
                 .filter((d: any) => d.data.group === "medium")
                 .classed("highlighted", true);
-        } else if (currentSection === 2) {
+        } else if (currentSection === 3) {
             // Highlight high violations group
             svg.selectAll(".group-circle")
                 .filter((d: any) => d.data.group !== "high")
@@ -423,7 +451,7 @@
         {#each scrollSections as section, i}
             <div class="step" class:active={currentSection === i}>
                 <div class="step-content">
-                    <h3>{section.title}</h3>
+                    {#if section.title !== ""}<h3>{section.title}</h3>{/if}
                     <p>{section.content}</p>
                 </div>
             </div>
@@ -486,7 +514,6 @@
         max-width: 350px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         margin-right: 5%;
-        transition: opacity 0.3s, transform 0.3s;
     }
     .step-content h3 {
 		margin-top: 0;
@@ -497,6 +524,8 @@
 	
 	.step-content p {
 		margin: 0;
+        font-size: 16px;
+        text-align: left;
 	}
     
     /* Tooltip styles */
@@ -515,7 +544,7 @@
         padding: 5px;
         pointer-events: all;
         font-weight: 300;
-        z-index: 10;
+        z-index: 100;
     }
     
     :global(strong) {
@@ -558,7 +587,8 @@
     
     /* Label background styles - replace the generic label-background */
     :global(.label-background-line-1),
-    :global(.label-background-line-2) {
+    :global(.label-background-line-2), 
+    :global(.label-background-line-3) {
         fill: #31C9DE;
         opacity: 0.9;
         rx: 5px;
@@ -581,21 +611,11 @@
         font-family: 'Helvetica', sans-serif;
     }
     
-    :global(.label-line-2) {
+    :global(.label-line-2), 
+    :global(.label-line-3) {
         font-weight: 400;
         font-size: 18px;
         font-family: 'Helvetica', sans-serif;
-    }
-    
-    /* Media query for responsive label size */
-    @media (max-width: 768px) {
-        :global(.group-label) {
-            font-size: 16px;
-        }
-        
-        :global(.label-line-2) {
-            font-size: 14px;
-        }
     }
     
     /* Ensure Scrolly component has proper z-index */
