@@ -4,8 +4,6 @@
     import Scrolly from "$lib/components/helpers/scrolly.svelte";
     import { getFullPath } from '$lib/utils/paths';
 
-    // define opacity values
-    const CIRCLE_OPACITIES = {STANDARD: 1, HOVER: 0.5};
 
     // Define interfaces for our data
     interface PlateData {
@@ -14,6 +12,7 @@
         registration_state: string;
         violation_borough: string;
         fines: number;
+        cum_share: number;
     }
 
     interface HierarchyNode {
@@ -33,11 +32,29 @@
         dataPath = '/data/school_zone_violations_sparse.csv',
         width = 928,
         height = 928,
+        // Add scrolly content for sections
+        scrollSections = [
+            {
+                title: "Minor Offenders (1-2 violations)",
+                content: "Vehicles with 1-2 violations make up the majority of offenders. While these are minor offenders, they still contribute to unsafe conditions around schools."
+            },
+            {
+                title: "Repeat Offenders (3-15 violations)",
+                content: "These vehicles have between 3 and 15 violations, showing a pattern of disregard for school zone safety. They represent drivers who repeatedly break the law."
+            },
+            {
+                title: "Extreme Offenders (16+ violations)",
+                content: "The most dangerous vehicles have 16 or more violations. These extreme offenders pose a significant threat to children's safety in school zones."
+            }
+        ]
     } = $props();
 
     // References to DOM elements
     let container: HTMLElement;
     let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+    
+    // Scrolly state
+    let currentSection = $state(0);
     
     // Data processing function
     function processData(data: Array<Record<string, string>>): PlateData[] {
@@ -50,6 +67,7 @@
                 registration_state: d.registration_state,
                 violation_borough: d.violation_borough,
                 fines: +d.fines,
+                cum_share: +d.cum_share,
             }));
         
         // Sort by violation count in descending order
@@ -76,13 +94,13 @@
         const singleViolations = data.filter(d => d.value >= 1 && d.value <= 2);
         const mediumViolations = data.filter(d => d.value >= 3 && d.value <= 15);
         const highViolations = data.filter(d => d.value >= 16);
-        
-        // Create the hierarchical data structure
+
+        // Create the hierarchical data structure with share info
         const hierarchyData: HierarchyNode = {
             name: "All Violations",
             children: [
                 {
-                    name: "1-2 Violations",
+                    name: `1-2 Violations\n${(((d3.max(singleViolations, d => d.cum_share) ?? 0) - (d3.min(singleViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of all violations`,
                     group: "single",
                     children: singleViolations.map(d => ({
                         name: d.plate_id,
@@ -95,7 +113,7 @@
                     }))
                 },
                 {
-                    name: "3-15 Violations",
+                    name: `3-15 Violations\n${(((d3.max(mediumViolations, d => d.cum_share) ?? 0) - (d3.min(mediumViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of all violations`,
                     group: "medium",
                     children: mediumViolations.map(d => ({
                         name: d.plate_id,
@@ -108,7 +126,7 @@
                     }))
                 },
                 {
-                    name: "16+ Violations",
+                    name: `16+ Violations\n${(((d3.max(highViolations, d => d.cum_share) ?? 0) - (d3.min(highViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of all violations`,
                     group: "high",
                     children: highViolations.map(d => ({
                         name: d.plate_id,
@@ -125,8 +143,8 @@
         
         // Create the pack layout
         const pack = d3.pack<HierarchyNode>()
-            .size([width - 40, height - 60])
-            .padding(3);
+            .size([width, height])
+            .padding(3); // Scale padding proportionally
             
         // Generate the hierarchy and calculate positions
         const root = d3.hierarchy<HierarchyNode>(hierarchyData)
@@ -139,21 +157,16 @@
         // Filter out the root node for rendering
         const displayNodes = nodes.filter(d => d.depth > 0);
         
-        // Create a color scale for the groups
-        const colorScale = d3.scaleOrdinal<string, string>()
-            .domain(["single", "medium", "high"])
-            .range(["var(--primary-blue)", "var(--primary-blue)", "var(--primary-blue)"]);
-        
         // Create a group for all the circles and center it
         const g = svg.append("g")
-            .attr("transform", `translate(20, 50)`);
+            .attr("transform", `translate(${width/2}, ${height/2 - 100})`);
             
         // Create the circles
         const circles = g.selectAll("circle")
             .data(displayNodes) // Use filtered nodes without the root
             .join("circle")
-            .attr("cx", d => d.x)
-            .attr("cy", d => d.y)
+            .attr("cx", d => d.x - width/2)
+            .attr("cy", d => d.y - height/2)
             .attr("r", d => d.r)
             .attr("class", d => {
                 // Apply different classes based on depth
@@ -231,39 +244,68 @@
             .data(displayNodes.filter(d => d.depth === 1))
             .join("g")
             .attr("class", "label-group")
-            .attr("transform", d => `translate(${d.x}, ${d.y})`);
+            .attr("transform", d => `translate(${d.x - width/2}, ${d.y - height/2})`);
 
         // Add the text elements first (so we can measure them)
         const textElements = labelGroups.append("text")
             .attr("class", "group-label")
-            .attr("x", 0)
-            .attr("y", 0)
             .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "middle")
-            .attr("font-size", d => Math.min(d.r / 3, 16))
-            .attr("pointer-events", "none")
-            .text(d => d.data.name);
+            .attr("dominant-baseline", "middle");
             
-        // Now measure each text element and add a highlight background behind it
-        textElements.each(function(d, i) {
+        // Add tspans for multi-line text with separate classes
+        textElements.each(function(d) {
             const textElement = d3.select(this);
-            const textNode = textElement.node() as SVGTextElement;
-            const textWidth = textNode.getComputedTextLength();
+            const lines = d.data.name.split('\n');
             
-            // Add a highlight rectangle that fits the text exactly
-            // Get the parent group using the parent node element (safely check if it exists)
+            // Clear any existing content
+            textElement.html("");
+            
+            // Add first line (title) with a specific class
+            textElement.append("tspan")
+                .attr("class", "label-line-1")
+                .attr("x", 0)
+                .attr("y", -12)
+                .text(lines[0]);
+            
+            // Add second line (percentage) with a specific class
+            textElement.append("tspan")
+                .attr("class", "label-line-2")
+                .attr("x", 0)
+                .attr("y", 12)
+                .text(lines[1]);
+        });
+            
+        // Now create separate highlight rectangles for each line
+        textElements.each(function(d) {
+            const textElement = d3.select(this);
             const parentNode = this.parentNode;
-            if (parentNode) {
-                const parentGroup = d3.select(parentNode as SVGGElement);
-                parentGroup.insert("rect", "text") // Insert before the text (so it's behind)
-                    .attr("class", "label-background")
-                    .attr("x", -textWidth/2 - 10) // Center with padding
-                    .attr("y", -10) // Position with padding
-                    .attr("width", textWidth + 20) // Add padding
-                    .attr("height", 20) // Fixed height with padding
-                    .attr("rx", 4) // Rounded corners
-                    .attr("ry", 4);
-            }
+            if (!parentNode) return;
+            
+            const parentGroup = d3.select(parentNode as SVGGElement);
+            
+            // Measure the first line (title)
+            const firstLine = textElement.select(".label-line-1").node() as SVGTextElement;
+            const firstLineWidth = firstLine.getComputedTextLength();
+            
+            // Create highlight for first line
+            parentGroup.insert("rect", "text")
+                .attr("class", "label-background-line-1")
+                .attr("x", -firstLineWidth/2 - 10)
+                .attr("y", -25)
+                .attr("width", firstLineWidth + 20)
+                .attr("height", 26);
+                
+            // Measure the second line (percentage)
+            const secondLine = textElement.select(".label-line-2").node() as SVGTextElement;
+            const secondLineWidth = secondLine.getComputedTextLength();
+            
+            // Create highlight for second line
+            parentGroup.insert("rect", "text")
+                .attr("class", "label-background-line-2")
+                .attr("x", -secondLineWidth/2 - 10)
+                .attr("y", 0)
+                .attr("width", secondLineWidth + 20)
+                .attr("height", 24);
         });
     }
     
@@ -274,9 +316,93 @@
             // Adjust SVG dimensions if needed
             svg.attr("width", width)
                .attr("height", height);
+               
+            // Update the center point of the visualization
+            svg.select(".circle-pack-group")
+               .attr("transform", `translate(${width/2}, ${height/2 - 100})`);
         }
     }
     
+    // Function to highlight groups based on current scroll section
+    function updateVisualizationHighlights() {
+        if (!svg) return;
+        
+        // Reset all highlights
+        svg.selectAll(".group-circle")
+            .classed("highlighted", false)
+            .classed("dimmed", false);
+        
+        svg.selectAll(".leaf-circle")
+            .classed("dimmed", false);
+            
+        // Apply specific highlights based on the current section
+        if (currentSection === 0) {
+            // Highlight single violations group
+            svg.selectAll(".group-circle")
+                .filter((d: any) => d.data.group !== "single")
+                .classed("dimmed", true);
+                
+            svg.selectAll(".leaf-circle")
+                .filter((d: any) => d.data.group !== "single")
+                .classed("dimmed", true);
+                
+            svg.selectAll(".group-circle")
+                .filter((d: any) => d.data.group === "single")
+                .classed("highlighted", true);
+        } else if (currentSection === 1) {
+            // Highlight medium violations group
+            svg.selectAll(".group-circle")
+                .filter((d: any) => d.data.group !== "medium")
+                .classed("dimmed", true);
+                
+            svg.selectAll(".leaf-circle")
+                .filter((d: any) => d.data.group !== "medium")
+                .classed("dimmed", true);
+                
+            svg.selectAll(".group-circle")
+                .filter((d: any) => d.data.group === "medium")
+                .classed("highlighted", true);
+        } else if (currentSection === 2) {
+            // Highlight high violations group
+            svg.selectAll(".group-circle")
+                .filter((d: any) => d.data.group !== "high")
+                .classed("dimmed", true);
+                
+            svg.selectAll(".leaf-circle")
+                .filter((d: any) => d.data.group !== "high")
+                .classed("dimmed", true);
+                
+            svg.selectAll(".group-circle")
+                .filter((d: any) => d.data.group === "high")
+                .classed("highlighted", true);
+        }
+    }
+    
+    // Effect to update visualization when section changes
+    $effect(() => {
+        if (currentSection !== undefined) {
+            updateVisualizationHighlights();
+        }
+    });
+    
+    // Update scrollSections with percentage information after loading data
+    function updateScrollSectionsWithPercentages(singleShare: number, mediumShare: number, highShare: number) {
+        scrollSections = [
+            {
+                title: `Minor Offenders (1-2 violations)\n${singleShare.toFixed(1)}% of all violations`,
+                content: `Vehicles with 1-2 violations make up ${singleShare.toFixed(1)}% of all violations. While these are minor offenders, they still contribute to unsafe conditions around schools.`
+            },
+            {
+                title: "Repeat Offenders (3-15 violations)",
+                content: "These vehicles have between 3 and 15 violations, showing a pattern of disregard for school zone safety. They represent drivers who repeatedly break the law."
+            },
+            {
+                title: "Extreme Offenders (16+ violations)",
+                content: "The most dangerous vehicles have 16 or more violations. These extreme offenders pose a significant threat to children's safety in school zones."
+            }
+        ];
+    }
+
     onMount(() => {
         // Add resize event listener
         window.addEventListener('resize', handleResize);
@@ -300,18 +426,109 @@
     });
 </script>
 
-<div class="circle-pack-container" bind:this={container}>
-    <!-- The visualization will be rendered here -->
-</div>
+<section id="scrolly">
+    <!-- Background visualization container -->
+    <div class="visualization-container" bind:this={container}>
+        <!-- The visualization will be rendered here by D3 -->
+    </div>
+    
+    <!-- Spacer to start scrolling below the initial view -->
+    <div class="spacer"></div>
+    
+    <!-- Scrolly component for text sections -->
+    <Scrolly bind:value={currentSection}>
+        {#each scrollSections as section, i}
+            <div class="step" class:active={currentSection === i}>
+                <div class="step-content">
+                    <h3>{section.title}</h3>
+                    <p>{section.content}</p>
+                </div>
+            </div>
+        {/each}
+    </Scrolly>
+    
+    <!-- Spacer at the end to ensure we can scroll to the last section -->
+    <div class="spacer"></div>
+</section>
 
 <style>
-    .circle-pack-container {
-        width: 100%;
-        height: 100%;
-        min-height: 500px;
+    #scrolly {
         position: relative;
+        width: 100%;
     }
     
+    .visualization-container {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        width: 100%;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden; /* Prevent any overflow issues */
+    }
+    
+    /* SVG specific styles to ensure proper sizing and centering */
+    :global(.visualization-container svg) {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        display: block; /* Remove any baseline alignment issues */
+    }
+    
+    /* Make sure the containing group is properly centered */
+    :global(.circle-pack-group) {
+        transform-origin: center center;
+    }
+    
+    .spacer {
+        height: 50vh;
+    }
+    
+    .step {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 20px;
+        position: relative;
+        z-index: 5;
+    }
+    
+    .step-content {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 8px;
+        padding: 20px;
+        max-width: 350px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-right: 5%;
+        transition: opacity 0.3s, transform 0.3s;
+    }
+    
+    .step-content h3 {
+        margin-top: 0;
+        margin-bottom: 0.5em;
+        font-weight: 550;
+        font-size: 18px;
+        white-space: pre-line; /* Handle line breaks in the title */
+    }
+    
+    /* Style the second line (percentage line) of the section titles */
+    .step-content h3::after {
+        content: "";
+        display: block;
+        font-weight: 400;
+        font-size: 16px;
+        margin-top: 2px;
+    }
+    
+    .step-content p {
+        margin: 0;
+        font-weight: 300;
+    }
+    
+    /* Tooltip styles */
     :global(.tooltip) {
         opacity: 0;
         transition: opacity 0.2s;
@@ -327,27 +544,22 @@
         padding: 5px;
         pointer-events: all;
         font-weight: 300;
+        z-index: 10;
     }
     
-    :global(.tooltip.visible) {
-        opacity: 1;
-    }
-
     :global(strong) {
         font-weight: 450;
     }
     
+    /* Circle styles */
     :global(circle) {
-        transition: opacity 0.3s, fill 0.3s, stroke-width 0.3s;
+        transition: opacity 0.5s, fill 0.5s, stroke-width 0.3s;
         cursor: pointer;
     }
     
     :global(.group-circle) {
         fill: var(--color-background);
         opacity: 1;
-        stroke: black;
-        stroke-width: 1px;
-        stroke-dasharray: 5, 3;  /* Creates a dashed line pattern: 5px dash, 3px gap */
     }
     
     :global(.leaf-circle) {
@@ -363,20 +575,62 @@
         stroke-width: 2px;
     }
     
-    :global(.label-background) {
+    /* New highlight styles for scrolly interaction */
+    :global(.highlighted) {
+        stroke: #31C9DE;
+        stroke-width: 4px;
+    }
+    
+    :global(.dimmed) {
+        opacity: 0.2;
+    }
+    
+    /* Label background styles - replace the generic label-background */
+    :global(.label-background-line-1),
+    :global(.label-background-line-2) {
         fill: #31C9DE;
         opacity: 0.9;
         rx: 5px;
         ry: 5px;
     }
     
+    /* Group label base styles */
     :global(.group-label) {
         fill: black;
         font-weight: 500; 
         font-size: 20px;
-        /* Remove text shadow and stroke since we have a background now */
         text-shadow: none;
         stroke: none;
     }
+    
+    /* Specific styles for each line */
+    :global(.label-line-1) {
+        font-weight: 600;
+        font-style: italic;
+        font-size: 20px;
+        font-family: 'Helvetica', sans-serif;
+    }
+    
+    :global(.label-line-2) {
+        font-weight: 400;
+        font-size: 18px;
+        font-family: 'Helvetica', sans-serif;
+    }
+    
+    /* Media query for responsive label size */
+    @media (max-width: 768px) {
+        :global(.group-label) {
+            font-size: 16px;
+        }
+        
+        :global(.label-line-2) {
+            font-size: 14px;
+        }
+    }
+    
+    /* Ensure Scrolly component has proper z-index */
+    :global(.scrolly-container) {
+        position: relative;
+        z-index: 10;
+    }
 </style>
-
