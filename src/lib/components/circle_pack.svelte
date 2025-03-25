@@ -384,24 +384,7 @@
             updateVisualizationHighlights();
         }
     });
-    
-    // Update scrollSections with percentage information after loading data
-    function updateScrollSectionsWithPercentages(singleShare: number, mediumShare: number, highShare: number) {
-        scrollSections = [
-            {
-                title: `Minor Offenders (1-2 violations)\n${singleShare.toFixed(1)}% of all violations`,
-                content: `Vehicles with 1-2 violations make up ${singleShare.toFixed(1)}% of all violations. While these are minor offenders, they still contribute to unsafe conditions around schools.`
-            },
-            {
-                title: "Repeat Offenders (3-15 violations)",
-                content: "These vehicles have between 3 and 15 violations, showing a pattern of disregard for school zone safety. They represent drivers who repeatedly break the law."
-            },
-            {
-                title: "Extreme Offenders (16+ violations)",
-                content: "The most dangerous vehicles have 16 or more violations. These extreme offenders pose a significant threat to children's safety in school zones."
-            }
-        ];
-    }
+
 
     onMount(() => {
         // Add resize event listener
@@ -505,28 +488,16 @@
         margin-right: 5%;
         transition: opacity 0.3s, transform 0.3s;
     }
-    
     .step-content h3 {
-        margin-top: 0;
-        margin-bottom: 0.5em;
-        font-weight: 550;
-        font-size: 18px;
-        white-space: pre-line; /* Handle line breaks in the title */
-    }
-    
-    /* Style the second line (percentage line) of the section titles */
-    .step-content h3::after {
-        content: "";
-        display: block;
-        font-weight: 400;
-        font-size: 16px;
-        margin-top: 2px;
-    }
-    
-    .step-content p {
-        margin: 0;
-        font-weight: 300;
-    }
+		margin-top: 0;
+		margin-bottom: 0.5em;
+		font-weight: 550;
+		font-size: 18px;
+	}
+	
+	.step-content p {
+		margin: 0;
+	}
     
     /* Tooltip styles */
     :global(.tooltip) {
