@@ -1,6 +1,11 @@
 <script>
     import Footer from "$lib/components/footer.svelte";
     import CirclePack from "$lib/components/circle_pack.svelte";
+    import { onMount } from 'svelte';
+
+    onMount(() => {
+        window.scrollTo(0, 0);
+    });
 </script>
 
 <main>

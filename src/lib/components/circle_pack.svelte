@@ -1,38 +1,19 @@
-<script lang="ts">
+<script>
     import * as d3 from 'd3';
     import { onMount } from 'svelte';
     import Scrolly from "$lib/components/helpers/scrolly.svelte";
     import { getFullPath } from '$lib/utils/paths';
 
-
-    // Define interfaces for our data
-    interface PlateData {
-        plate_id: string;
-        value: number;
-        registration_state: string;
-        violation_borough: string;
-        fines: number;
-        cum_share: number;
-        row_pct: number;
-    }
-
-    interface HierarchyNode {
-        name: string;
-        value?: number;
-        children?: HierarchyNode[];
-        // Add additional properties for our data
-        plate_id?: string;
-        registration_state?: string;
-        violation_borough?: string;
-        fines?: number;
-        group?: string;
-    }
+    // define global variables
+    let nodes = [];
+    let simulation = null;
+    let nodeHighlight = false;
 
     // Props for the component
     let {
         dataPath = '/data/school_zone_violations_sparse.csv',
-        width = 928,
-        height = 928,
+        width = 1200,
+        height = 1000,
         // Add scrolly content for sections
         scrollSections = [
             {
@@ -40,29 +21,37 @@
                 content: "Each circle here represents a driver caught by school zone speed cameras at least once. Circles are sized based on the driver's violation count; the more violations the driver committed, the larger the circle."
             },
             {
-                title: "Minor Offenders",
-                content: "Drivers with 1-2 violations make up the vast majority of offenders. These drivers sped through school zones, but didn't seem to make a habit of it."
+                title: "Typical Offenders",
+                content: "The typical offender will only speed through a school zone once a year."
             },
             {
-                title: "Repeat Offenders",
+                title: "Routine Offenders",
                 content: "Drivers with 3-15 violations show a more consistent pattern of disregard for school zone safety. They're a large minority, and account for most violations."
             },
             {
                 title: "Extreme Offenders",
                 content: "Drivers with 16+ violations represent the top 1% of offenders. They account for a disproportionately large share of all violations, and post the greatest threat to public safety."
+            },
+            {
+                title: "A Closer Look",
+                content: "Let's visualize what it means when a single driver accumulates 20 violations - equivalent to 20 separate instances of endangering children in school zones."
+            },
+            {
+                title: "The Most Dangerous Driver",
+                content: "The most egregious offender in our dataset was caught speeding in school zones 755 times. That's more than twice every day of the school year, consistently endangering children's lives."
             }
         ]
     } = $props();
 
     // References to DOM elements
-    let container: HTMLElement;
-    let svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+    let container;
+    let svg;
     
     // Scrolly state
     let currentSection = $state(0);
     
     // Data processing function
-    function processData(data: Array<Record<string, string>>): PlateData[] {
+    function processData(data) {
         // Filter out rows with missing values and convert to numbers
         const processedData = data
             .filter(d => d.plate_id && d.school_zone_violations)
@@ -81,7 +70,7 @@
     }
     
     // Function to create the circular packing visualization
-    function createVisualization(data: PlateData[]): void {
+    function createVisualization(data) {
         console.log("Creating visualization with", data.length, "items");
         
         // Clear any existing SVG
@@ -94,248 +83,101 @@
             .attr("height", height)
             .attr("viewBox", [0, 0, width, height])
             .attr("style", "max-width: 100%; height: auto;");
-            
-        // Create a hierarchical structure for the pack layout
-        // Group data into 3 categories: 1 violation, 3-15 violations, 16+ violations
-        const singleViolations = data.filter(d => d.value >= 1 && d.value <= 2);
-        const mediumViolations = data.filter(d => d.value >= 3 && d.value <= 15);
-        const highViolations = data.filter(d => d.value >= 16);
 
-        // Create the hierarchical data structure with share info
-        const hierarchyData: HierarchyNode = {
-            name: "All Violations",
-            children: [
-                {
-                    name: `1-2 Violations\n${(((d3.max(singleViolations, d => d.cum_share) ?? 0) - (d3.min(singleViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of violations\n${(((d3.max(singleViolations, d => d.row_pct) ?? 0) - (d3.min(singleViolations, d => d.row_pct) ?? 0)) * 100).toFixed(0)}% of drivers`,
-                    group: "single",
-                    children: singleViolations.map(d => ({
-                        name: d.plate_id,
-                        value: d.value,
-                        plate_id: d.plate_id,
-                        registration_state: d.registration_state,
-                        violation_borough: d.violation_borough,
-                        fines: d.fines,
-                        group: "single"
-                    }))
-                },
-                {
-                    name: `3-15 Violations\n${(((d3.max(mediumViolations, d => d.cum_share) ?? 0) - (d3.min(mediumViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of violations\n${(((d3.max(mediumViolations, d => d.row_pct) ?? 0) - (d3.min(mediumViolations, d => d.row_pct) ?? 0)) * 100).toFixed(0)}% of drivers`,
-                    group: "medium",
-                    children: mediumViolations.map(d => ({
-                        name: d.plate_id,
-                        value: d.value,
-                        plate_id: d.plate_id,
-                        registration_state: d.registration_state,
-                        violation_borough: d.violation_borough,
-                        fines: d.fines,
-                        group: "medium"
-                    }))
-                },
-                {
-                    name: `16+ Violations\n${(((d3.max(highViolations, d => d.cum_share) ?? 0) - (d3.min(highViolations, d => d.cum_share) ?? 0)) * 100).toFixed(0)}% of violations\n${(((d3.max(highViolations, d => d.row_pct) ?? 0) - (d3.min(highViolations, d => d.row_pct) ?? 0)) * 100).toFixed(0)}% of drivers`,
-                    group: "high",
-                    children: highViolations.map(d => ({
-                        name: d.plate_id,
-                        value: d.value,
-                        plate_id: d.plate_id,
-                        registration_state: d.registration_state,
-                        violation_borough: d.violation_borough,
-                        fines: d.fines,
-                        group: "high"
-                    }))
-                }
-            ]
-        };
-        
-        // Create the pack layout
-        const pack = d3.pack<HierarchyNode>()
-            .size([width, height])
-            .padding(3); // Scale padding proportionally
             
-        // Generate the hierarchy and calculate positions
-        const root = d3.hierarchy<HierarchyNode>(hierarchyData)
-            .sum(d => d.children ? 0 : d.value || 0) // Only leaf nodes contribute to size
-            .sort((a, b) => (b.value || 0) - (a.value || 0));
+        // Create nodes for the force simulation
+        nodes = data.map(d => {
+            // Create a scale for y position based on violations
+            const yScale = d3.scaleLog()
+                .domain([d3.min(data, d => d.value), d3.max(data, d => d.value)])
+                .range([height * 0.4, height * 0.6]);  
+                
+            return {
+                id: d.plate_id,
+                value: d.value,
+                plate_id: d.plate_id,
+                registration_state: d.registration_state,
+                violation_borough: d.violation_borough,
+                fines: d.fines,
+                violations: d.value,
+                // square root of radius to ensure area is proportional to violations
+                radius: Math.sqrt(d.value) * 3,
+                // Initialize x coordinate randomly, y based on violations
+                x: Math.random() * width,
+                y: yScale(d.value),
+                // Store target y for force
+                targetY: yScale(d.value),
+                closerLook: false
+            };
+        });
+        
+        // Create the force simulation
+        simulation = d3.forceSimulation(nodes)
+            .force("charge", d3.forceManyBody().strength(-3))
+            .force("collision", d3.forceCollide().radius(d => d.radius * 0.9))
+            .force("x", d3.forceX(d => d.x).strength(0.2))
+            .force("y", d3.forceY(d => d.y).strength(.05));
             
-        // Apply the pack layout
-        const nodes = pack(root).descendants(); // Include all nodes now
-        
-        // Filter out the root node for rendering
-        const displayNodes = nodes.filter(d => d.depth > 0);
-        
-        // Create a group for all the circles and center it
+        // Create a group for all the circles
         const g = svg.append("g")
-            .attr("transform", `translate(${width/2}, ${height/2 - 100})`);
+            .attr("class", "circle-pack-group");
             
         // Create the circles
         const circles = g.selectAll("circle")
-            .data(displayNodes) // Use filtered nodes without the root
+            .data(nodes)
             .join("circle")
-            .attr("cx", d => d.x - width/2)
-            .attr("cy", d => d.y - height/2)
-            .attr("r", d => d.r)
-            .attr("class", d => {
-                // Apply different classes based on depth
-                if (d.depth === 1) return "group-circle";
-                return "leaf-circle";
-            })
-            .on("mouseover", function(event: MouseEvent, d: d3.HierarchyCircularNode<HierarchyNode>) {
-                // Only apply hover effects for leaf nodes (individual plates)
-                if (d.depth === 2) {
-                    d3.select(this)
-                        .classed("leaf-circle-hover", true);
-                        
-                    // Create or update tooltip
-                    const tooltip = d3.select(container)
-                        .selectAll(".tooltip")
-                        .data([null])
-                        .join("div")
-                        .attr("class", "tooltip")
+            .attr("class", "leaf-circle")
+            .attr("r", d => d.radius)
+            .on("mouseover", function(event, d) {
+                d3.select(this)
+                    .classed("leaf-circle-hover", true);
                     
-                    // Get container's bounding rectangle to adjust coordinates properly
-                    const containerRect = container.getBoundingClientRect();
-                    // Calculate position relative to the container
-                    const relativeX = event.clientX - containerRect.left;
-                    const relativeY = event.clientY - containerRect.top;
+                // Create or update tooltip
+                const tooltip = d3.select(container)
+                    .selectAll(".tooltip")
+                    .data([null])
+                    .join("div")
+                    .attr("class", "tooltip")
+                
+                const tooltipContent = `
+                    <strong>Plate ID:</strong> ${d.plate_id}<br>
+                    <strong>Registration state:</strong> ${d.registration_state || 'N/A'}<br>
+                    <strong>Main borough:</strong> ${d.violation_borough || 'N/A'}<br>
+                    <strong>School zone violations:</strong> ${d.value}<br>
+                    <strong>Total fines:</strong> $${(d.fines || 0).toLocaleString()}
+                `;
                     
-                    const tooltipContent = `
-                        <strong>Plate ID:</strong> ${d.data.plate_id || d.data.name}<br>
-                        <strong>Registration state:</strong> ${d.data.registration_state || 'N/A'}<br>
-                        <strong>Main borough:</strong> ${d.data.violation_borough || 'N/A'}<br>
-                        <strong>School zone violations:</strong> ${d.data.value || 0}<br>
-                        <strong>Total fines:</strong> $${(d.data.fines || 0).toLocaleString()}
-                    `;
-                        
-                    tooltip
-                        .html(tooltipContent)
-                        .style("left", `${relativeX + 15}px`) // position tooltip relative to container
-                        .style("top", `${relativeY - 40}px`)  // position tooltip above the mouse
-                        .style("opacity", 1);
-                }
+                tooltip
+                    .html(tooltipContent)
+                    .style("left", `${event.clientX + 15}px`)
+                    .style("top", `${event.clientY - 40}px`)
+                    .style("opacity", 1);
             })
             .on("mouseout", function() {
-                const d = d3.select(this).datum() as d3.HierarchyCircularNode<HierarchyNode>;
-                
-                // Only reset styles for leaf nodes
-                if (d.depth === 2) {
-                    d3.select(this)
-                        .classed("leaf-circle-hover", false);
-                        
-                    d3.select(container)
-                        .selectAll(".tooltip")
-                        .style("opacity", 0);
-                }
-            })
-            .on("mousemove", function(event: MouseEvent) {
-                const d = d3.select(this).datum() as d3.HierarchyCircularNode<HierarchyNode>;
-                
-                // Only update tooltip position for leaf nodes
-                if (d.depth === 2) {
-                    // Get container's bounding rectangle to adjust coordinates properly
-                    const containerRect = container.getBoundingClientRect();
-                    // Calculate position relative to the container
-                    const relativeX = event.clientX - containerRect.left;
-                    const relativeY = event.clientY - containerRect.top;
+                d3.select(this)
+                    .classed("leaf-circle-hover", false);
                     
-                    d3.select(container)
-                        .selectAll(".tooltip")
-                        .style("left", `${relativeX + 15}px`) // keep tooltip relative to container
-                        .style("top", `${relativeY - 40}px`); // keep tooltip above the mouse
-                }
+                d3.select(container)
+                    .selectAll(".tooltip")
+                    .style("opacity", 0);
+            })
+            .on("mousemove", function(event) {
+                d3.select(container)
+                    .selectAll(".tooltip")
+                    .style("left", `${event.clientX + 15}px`)
+                    .style("top", `${event.clientY - 40}px`);
             });
             
-        // Add group labels with text-fitted highlights
-        // First, create a group for each label to contain both the highlight and text
-        const labelGroups = g.selectAll("g.label-group")
-            .data(displayNodes.filter(d => d.depth === 1))
-            .join("g")
-            .attr("class", "label-group")
-            .attr("transform", d => `translate(${d.x - width/2}, ${d.y - height/2})`);
-
-        // Add the text elements first (so we can measure them)
-        const textElements = labelGroups.append("text")
-            .attr("class", "group-label")
-            .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "middle");
-            
-        // Add tspans for multi-line text with separate classes
-        textElements.each(function(d) {
-            const textElement = d3.select(this);
-            const lines = d.data.name.split('\n');
-            
-            // Clear any existing content
-            textElement.html("");
-            
-            // Add first line (title) with a specific class
-            textElement.append("tspan")
-                .attr("class", "label-line-1")
-                .attr("x", 0)
-                .attr("y", -12)
-                .text(lines[0]);
-            
-            // Add second line (violation percentage) with a specific class
-            textElement.append("tspan")
-                .attr("class", "label-line-2")
-                .attr("x", 0)
-                .attr("y", 12)
-                .text(lines[1]);
-
-             // Add third line (driver percentage) with a specific class
-             textElement.append("tspan")
-                .attr("class", "label-line-3")
-                .attr("x", 0)
-                .attr("y", 36)
-                .text(lines[2]);
-        });
-            
-        // Now create separate highlight rectangles for each line
-        textElements.each(function(d) {
-            const textElement = d3.select(this);
-            const parentNode = this.parentNode;
-            if (!parentNode) return;
-            
-            const parentGroup = d3.select(parentNode as SVGGElement);
-            
-            // Measure the first line (title)
-            const firstLine = textElement.select(".label-line-1").node() as SVGTextElement;
-            const firstLineWidth = firstLine.getComputedTextLength();
-            
-            // Create highlight for first line
-            parentGroup.insert("rect", "text")
-                .attr("class", "label-background-line-1")
-                .attr("x", -firstLineWidth/2 - 10)
-                .attr("y", -25)
-                .attr("width", firstLineWidth + 20)
-                .attr("height", 26);
-                
-            // Measure the second line (violation percentage)
-            const secondLine = textElement.select(".label-line-2").node() as SVGTextElement;
-            const secondLineWidth = secondLine.getComputedTextLength();
-            
-            // Create highlight for second line
-            parentGroup.insert("rect", "text")
-                .attr("class", "label-background-line-2")
-                .attr("x", -secondLineWidth/2 - 10)
-                .attr("y", 0)
-                .attr("width", secondLineWidth + 20)
-                .attr("height", 24);
-
-            // Measure the third line (driver percentage)
-            const thirdLine = textElement.select(".label-line-3").node() as SVGTextElement;
-            const thirdLineWidth = thirdLine.getComputedTextLength();
-            
-            // Create highlight for third line
-            parentGroup.insert("rect", "text")
-                .attr("class", "label-background-line-3")
-                .attr("x", -thirdLineWidth/2 - 10)
-                .attr("y", 24)  // Changed from 0 to 24 to position correctly below the second highlight
-                .attr("width", thirdLineWidth + 20)
-                .attr("height", 24);
+        // Update circle positions on each tick
+        simulation.on("tick", () => {
+            circles
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
         });
     }
     
     // Handle window resize
-    function handleResize(): void {
+    function handleResize() {
         // Only re-render if we have data loaded
         if (svg) {
             // Adjust SVG dimensions if needed
@@ -347,62 +189,177 @@
                .attr("transform", `translate(${width/2}, ${height/2 - 100})`);
         }
     }
+
+    function resetNodes() {
+        nodeHighlight = false;
+        // Reset all node properties
+        nodes.forEach(d => {
+            d.closerLook = false;
+            // Reset to original x and y positions
+            d.x = Math.random() * width;
+            d.y = d.targetY; // Use the stored target Y position
+            // Remove highlight positions and scaling
+            delete d.highlightX;
+            delete d.highlightY;
+            delete d.highlightRadius;
+            delete d.opacity;
+        });
+
+        // Reset nodeHighlight flag
+        nodeHighlight = false;
+
+        // Restart simulation with original forces but stronger parameters for faster transition
+        simulation
+            .force("charge", d3.forceManyBody().strength(-10)) // Stronger repulsion
+            .force("collision", d3.forceCollide().radius(d => d.radius * 0.9).strength(1)) // Stronger collision
+            .force("x", d3.forceX(d => d.x).strength(0.5)) // Stronger x-positioning
+            .force("y", d3.forceY(d => d.targetY).strength(0.2)) // Stronger y-positioning
+            .alpha(0.8) // Higher initial energy
+            .alphaDecay(0) // Faster decay rate
+            .restart();
+            
+        // Reset circle sizes and opacity
+        svg.selectAll(".leaf-circle")
+            .style("fill-opacity", 1)
+            .attr("r", d => d.radius);
+    }
+
+    function HighlightNodes(nodes, largerViolations, smallerViolations, scale = 1) {
+        nodeHighlight = true;
+        // Find a node with exactly largerViolations violations
+        const targetNode = nodes.find(d => d.violations === largerViolations);
+                
+        if (targetNode && simulation) {
+            // Center position in SVG
+            const centerX = width / 2;
+            const centerY = height / 2;
+            
+            // Reset all closerLook flags
+            nodes.forEach(d => d.closerLook = false);
+            
+            // Move and style the target node
+            targetNode.closerLook = true;
+            targetNode.highlightX = centerX;
+            targetNode.highlightY = centerY;
+            targetNode.opacity = 0.2;
+            targetNode.highlightRadius = targetNode.radius * scale * 1.8; // Scale up the target node by an additional 1.8
+
+            const smallerNodes = nodes.filter(d => d.violations === smallerViolations).slice(0, largerViolations);
+            
+            // Create hierarchy for smaller nodes
+            const packData = {
+                children: smallerNodes.map(d => ({
+                    radius: d.radius * scale, // Scale up the smaller nodes
+                    data: d
+                }))
+            };
+            
+            // Create hierarchy and pack layout
+            const root = d3.hierarchy(packData)
+                .sum(d => d.radius * d.radius * (0.9 + Math.random() * 0.2)); // Add slight randomness to sizing
+            
+            const pack = d3.pack()
+                .size([targetNode.highlightRadius * 1.8, targetNode.highlightRadius * 1.8])
+                .padding(0.5 + Math.random() * 1); // Randomize padding between circles
+            
+            // Apply the pack layout
+            pack(root);
+            
+            // Update positions of smaller nodes based on pack layout
+            root.children.forEach((node, i) => {
+                const originalNode = node.data.data;
+                originalNode.closerLook = true;
+                originalNode.highlightRadius = originalNode.radius * scale; // Store scaled radius
+                // Add slight random offset to each node's position
+                const randomAngle = Math.random() * Math.PI * 2;
+                const randomRadius = Math.random() * 10;
+                const randomX = Math.cos(randomAngle) * randomRadius;
+                const randomY = Math.sin(randomAngle) * randomRadius;
+                // Translate packed coordinates relative to target node center
+                originalNode.highlightX = centerX + (node.x - targetNode.highlightRadius * 0.9) + randomX;
+                originalNode.highlightY = centerY + (node.y - targetNode.highlightRadius * 0.9) + randomY;
+            });
+
+            // Move remaining nodes far away
+            nodes.filter(d => !d.closerLook).forEach(node => {
+                node.highlightX = 2000;
+                node.highlightY = 2000;
+            });
+
+            // Restart simulation with modified forces
+            simulation
+                .force("charge", d3.forceManyBody().strength(-10))
+                .force("x", d3.forceX(d => d.highlightX).strength(1))
+                .force("y", d3.forceY(d => d.highlightY).strength(1))
+                .force("collision", d3.forceCollide().radius(d => {
+                    // Only apply collision radius to smaller nodes
+                    // The larger node (targetNode) should not have collision detection
+                    if (d === targetNode) return 0;  // No collision for the large node
+                    return d.closerLook ? d.highlightRadius : d.radius;
+                }).strength(1)) // Stronger collision force to prevent overlap
+                .alpha(1)
+                .alphaDecay(0.1) // Slower decay for more stable positioning
+                .velocityDecay(0.6) // Add velocity decay to dampen movement
+                .restart();
+        }
+
+        // Update circle sizes and colors
+        svg.selectAll(".leaf-circle")
+            .style("fill-opacity", d => d.opacity)
+            .attr("r", d => d.closerLook ? d.highlightRadius : d.radius);
+    }
     
     // Function to highlight groups based on current scroll section
     function updateVisualizationHighlights() {
         if (!svg) return;
         
-        // Reset all highlights
-        svg.selectAll(".group-circle")
-            .classed("highlighted", false)
-            .classed("dimmed", false);
-        
+        // Reset all highlights and positions
         svg.selectAll(".leaf-circle")
-            .classed("dimmed", false);
+            .classed("dimmed", false)
+            .transition()
+            .attr("transform", "translate(0,0)");
             
         // Apply specific highlights based on the current section
         if (currentSection === 0) {
             // No highlighting or dimming for the initial overview section
             // All circles remain at full opacity
         } else if (currentSection === 1) {
-            // Highlight single violations group
-            svg.selectAll(".group-circle")
-                .filter((d: any) => d.data.group !== "single")
-                .classed("dimmed", true);
-                
+            // Highlight single violations
             svg.selectAll(".leaf-circle")
-                .filter((d: any) => d.data.group !== "single")
+                .filter(d => d.violations > 1)
                 .classed("dimmed", true);
-                
-            svg.selectAll(".group-circle")
-                .filter((d: any) => d.data.group === "single")
-                .classed("highlighted", true);
+            svg.selectAll(".leaf-circle")
+                .filter(d => d.violations == 1)
+                .classed("dimmed", false);
+            if (nodeHighlight) {
+                resetNodes();
+            } 
         } else if (currentSection === 2) {
-            // Highlight medium violations group
-            svg.selectAll(".group-circle")
-                .filter((d: any) => d.data.group !== "medium")
-                .classed("dimmed", true);
-                
+            // Highlight medium violations (2-15)
             svg.selectAll(".leaf-circle")
-                .filter((d: any) => d.data.group !== "medium")
+                .filter(d => d.violations >= 2 && d.violations < 15)
+                .classed("dimmed", false);
+            svg.selectAll(".leaf-circle")
+                .filter(d => d.violations < 2 || d.violations > 15)
                 .classed("dimmed", true);
-                
-            svg.selectAll(".group-circle")
-                .filter((d: any) => d.data.group === "medium")
-                .classed("highlighted", true);
+            if (nodeHighlight) {
+                resetNodes();
+            } 
         } else if (currentSection === 3) {
-            // Highlight high violations group
-            svg.selectAll(".group-circle")
-                .filter((d: any) => d.data.group !== "high")
-                .classed("dimmed", true);
-                
+            // update circles with violations > 15
             svg.selectAll(".leaf-circle")
-                .filter((d: any) => d.data.group !== "high")
+                .filter(d => d.violations > 15)
+                .classed("dimmed", false);
+            svg.selectAll(".leaf-circle")
+                .filter(d => d.violations <= 15)
                 .classed("dimmed", true);
-                
-            svg.selectAll(".group-circle")
-                .filter((d: any) => d.data.group === "high")
-                .classed("highlighted", true);
+            if (nodeHighlight) {
+                resetNodes();
+            } 
+        } else if (currentSection === 4) {
+            HighlightNodes(nodes, 20, 1, 5); // Scale up by 5x for better visibility
+        } else if (currentSection === 5) {
+            HighlightNodes(nodes, 755, 1, 2); // Scale up by 8x for better visibility of the comparison
         }
     }
     
@@ -412,7 +369,6 @@
             updateVisualizationHighlights();
         }
     });
-
 
     onMount(() => {
         // Add resize event listener
@@ -426,7 +382,7 @@
         d3.csv(fullDataPath)
             .then(processData)
             .then(createVisualization)
-            .catch((error: any) => {
+            .catch((error) => {
                 console.error("Error loading CSV:", error);
             });
             
@@ -504,7 +460,8 @@
         justify-content: flex-end;
         padding: 0 20px;
         position: relative;
-        z-index: 5;
+        z-index: 2;
+        pointer-events: none; /* Make step transparent to mouse events */
     }
     
     .step-content {
@@ -514,7 +471,9 @@
         max-width: 350px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         margin-right: 5%;
+        pointer-events: auto; /* Re-enable mouse events for the content box */
     }
+    
     .step-content h3 {
 		margin-top: 0;
 		margin-bottom: 0.5em;
@@ -535,16 +494,18 @@
         font-size: 14px;
         font-family: 'Helvetica', sans-serif;
         text-align: left;
-        position: absolute;
-        background-color: var(--color-background);
+        position: fixed;
+        background-color: white;
         color: black;
         border-radius: 5px;
         box-shadow: 0 0 10px rgba(0,0,0,0.25);
-        border: 0px solid black;
-        padding: 5px;
-        pointer-events: all;
+        border: 1px solid rgba(0,0,0,0.1);
+        padding: 10px;
+        pointer-events: none;
         font-weight: 300;
-        z-index: 100;
+        z-index: 9999; /* Ensure tooltip is always on top */
+        min-width: 200px;
+        max-width: 300px;
     }
     
     :global(strong) {
@@ -574,12 +535,7 @@
         stroke: black;
         stroke-width: 2px;
     }
-    
-    /* New highlight styles for scrolly interaction */
-    :global(.highlighted) {
-        stroke: #31C9DE;
-        stroke-width: 4px;
-    }
+
     
     :global(.dimmed) {
         opacity: 0.2;
@@ -621,6 +577,7 @@
     /* Ensure Scrolly component has proper z-index */
     :global(.scrolly-container) {
         position: relative;
-        z-index: 10;
+        z-index: 2;
+        pointer-events: none; /* Make container transparent to mouse events */
     }
 </style>

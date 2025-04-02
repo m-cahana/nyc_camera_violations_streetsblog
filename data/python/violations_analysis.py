@@ -132,6 +132,19 @@ merged.groupby('school_zone_violations_binned').agg(
     red_light_violations = ('red_light_violations', 'mean'), 
     n = ('plate_id', 'count')).reset_index()
 
+# ----- medians -----
+
+print(f"""
+      median school zone violations:
+      {school_zone_agg.school_zone_violations.median()}
+      """)
+
+
+print(f"""
+      median school zone violations among high offenders:
+      {school_zone_agg[school_zone_agg.school_zone_violations >= 15].school_zone_violations.median()}
+      """)
+
 # ----- all stats -----
 
 stat_report(school_zone_agg, 'all drivers')
