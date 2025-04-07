@@ -32,7 +32,7 @@
             },
             {
                 title: "Making Sense of Extreme Offenders",
-                content: "Extreme offenders are important for the same reason they capture visual attention: despite being small in number, they have an oversized impact on school zone violations."
+                content: "Extreme offenders are important for the same reason they capture visual attention: despite being small in number, they have an oversized impact on school zone violations. Let's look at how they compare to the typical offender."
             },
             {
                 title: "blah", 
@@ -98,6 +98,16 @@
                 .domain([d3.min(data, d => d.value), d3.max(data, d => d.value)])
                 .range([height * 0.1, height * 0.8]);  
                 
+            // For nodes with 755 violations, constrain their position to 20-80% of width/height
+            let xPos, yPos;
+            if (d.value === 755) {
+                xPos = randomNumberBetween(0.1, 0.9) * width;
+                yPos = randomNumberBetween(0.1, 0.9) * height;
+            } else {
+                xPos = Math.random() * width;
+                yPos = Math.random() * height;
+            }
+                
             return {
                 id: d.plate_id,
                 value: d.value,
@@ -109,8 +119,8 @@
                 // square root of radius to ensure area is proportional to violations
                 radius: Math.sqrt(d.value) * 3,
                 // Initialize x coordinate randomly, y based on violations
-                x: Math.random() * width,
-                y: Math.random() * height,
+                x: xPos,
+                y: yPos,
                 // Store target y for force
                 targetY: yScale(d.value),
                 closerLook: false
@@ -219,6 +229,7 @@
                 else {
                     node.highlightX = 0.5 * width;
                     node.highlightY = 0.3 * height;
+                    node.furtherSqueeze = true;
                 }
                 counter++;
             }
@@ -234,6 +245,7 @@
                 else {
                     node.highlightX = 0.5 * width;
                     node.highlightY = 0.45 * height;
+                    node.furtherPareBack = true;
                 }
                 counter++;
             }
@@ -261,10 +273,12 @@
                         centerX = 0.5 * width;
                         centerY = 0.7 * height;
                         maxRadius = 0.1 * Math.min(width, height);
+                        node.furtherSqueeze = true;
                     } else {
                         centerX = 0.5 * width;
                         centerY = 0.55 * height;
                         maxRadius = 0.01 * Math.min(width, height);
+                        node.furtherPareBack = true;
                     }
                     
                     // Calculate a random radius between 0 and maxRadius
@@ -291,44 +305,28 @@
         });
     }
 
-    function removeNodesAndGroup(nodes, circles, violationMin, violationMax, sampleShare = 0.2) {
-
-
-        // move nodes with violations inside range far away
-        nodes.filter(d => d.violations >= violationMin && d.violations <= violationMax).forEach(
+    function pareBackNodesFurther(nodes, circles) {
+        nodes.filter(d => d.furtherPareBack).forEach(
             node => {
                 node.highlightX = 2000;
                 node.highlightY = 2000;
-            });
+            }
+        );
 
-            
-        // other nodes should be grouped left or right
-        nodes.filter(d => d.violations < violationMin).forEach(
+        nodes.filter(d => d.furtherSqueeze).forEach(
             node => {
-                if (Math.random() < sampleShare) {
-                    node.highlightX = randomNumberBetween(0.15, 0.35) * width;
-                    node.highlightY = randomNumberBetween(0.3, 0.7) * height;
+                if (node.highlightY == 0.3 * height) {
+                    console.log('squeezing down')
+                    node.highlightY = 0.4 * height
                 } else {
-                    // off screen
-                    node.highlightX = 2000;
-                    node.highlightY = 2000;
+                    console.log('squeezing up')
+                    node.highlightY = node.highlightY - 0.05 * height
                 }
-            });
+            }
+        );
 
-        nodes.filter(d => d.violations > violationMax).forEach(
-            node => {
-                if (Math.random() < sampleShare) {
-                    node.highlightX = randomNumberBetween(0.65, 0.85) * width;
-                    node.highlightY = randomNumberBetween(0.3, 0.7) * height;
-                } else {
-                    // off screen
-                    node.highlightX = 2000;
-                    node.highlightY = 2000;
-                }
-            });
-
-         // Update circle positions on each tick
-         simulation.on("tick", () => {
+        // Update circle positions on each tick
+        simulation.on("tick", () => {
             circles
                 .transition()
                 .ease(d3.easeLinear) // Smooth easing function
@@ -337,8 +335,18 @@
         });
     }
 
+
     function simulationTickReset(simulation, circles) {
         console.log('resetting simulation')
+        
+        // Remove any forces that might have been added by other functions
+        simulation
+            .force("x", null)
+            .force("y", null)
+            .force("collision", d3.forceCollide().radius(d => d.radius * 1.1).strength(1.8))
+            .alpha(0.3)
+            .restart();
+
         simulation.on("tick", () => {
             circles
                 .transition()
@@ -354,89 +362,6 @@
             .attr("r", d => d.radius);
     }
 
-    function packNodes(nodes, largerViolations, smallerViolations, scale = 1) {
-        // Find a node with exactly largerViolations violations
-        const targetNode = nodes.find(d => d.violations === largerViolations);
-                
-        if (targetNode && simulation) {
-            // Center position in SVG
-            const centerX = width / 2;
-            const centerY = height / 2;
-            
-            // Reset all closerLook flags
-            nodes.forEach(d => d.closerLook = false);
-            
-            // Move and style the target node
-            targetNode.closerLook = true;
-            targetNode.packX = centerX;
-            targetNode.packY = centerY;
-            targetNode.opacity = 0.7;
-            targetNode.highlightRadius = targetNode.radius * scale * 1.8; // Scale up the target node by an additional 1.8
-
-            const smallerNodes = nodes.filter(d => d.violations === smallerViolations).slice(0, largerViolations);
-            
-            // Create hierarchy for smaller nodes
-            const packData = {
-                children: smallerNodes.map(d => ({
-                    radius: d.radius * scale, // Scale up the smaller nodes
-                    data: d
-                }))
-            };
-            
-            // Create hierarchy and pack layout
-            const root = d3.hierarchy(packData)
-                .sum(d => d.radius * d.radius * (0.9 + Math.random() * 0.2)); // Add slight randomness to sizing
-            
-            const pack = d3.pack()
-                .size([targetNode.highlightRadius * 1.8, targetNode.highlightRadius * 1.8])
-                .padding(0.5 + Math.random() * 1); // Randomize padding between circles
-            
-            // Apply the pack layout
-            pack(root);
-            
-            // Update positions of smaller nodes based on pack layout
-            root.children.forEach((node, i) => {
-                const originalNode = node.data.data;
-                originalNode.closerLook = true;
-                originalNode.highlightRadius = originalNode.radius * scale; // Store scaled radius
-                // Add slight random offset to each node's position
-                const randomAngle = Math.random() * Math.PI * 2;
-                const randomRadius = Math.random() * 10;
-                const randomX = Math.cos(randomAngle) * randomRadius;
-                const randomY = Math.sin(randomAngle) * randomRadius;
-                // Translate packed coordinates relative to target node center
-                originalNode.packX = centerX + (node.x - targetNode.highlightRadius * 0.9) + randomX;
-                originalNode.packY = centerY + (node.y - targetNode.highlightRadius * 0.9) + randomY;
-            });
-
-            // Move remaining nodes far away
-            nodes.filter(d => !d.closerLook).forEach(node => {
-                node.packX = 2000;
-                node.packY = 2000;
-            });
-
-            // Restart simulation with modified forces
-            simulation
-                .force("charge", d3.forceManyBody().strength(-10))
-                .force("x", d3.forceX(d => d.packX).strength(1))
-                .force("y", d3.forceY(d => d.packY).strength(1))
-                .force("collision", d3.forceCollide().radius(d => {
-                    // Only apply collision radius to smaller nodes
-                    // The larger node (targetNode) should not have collision detection
-                    if (d === targetNode) return 0;  // No collision for the large node
-                    return d.closerLook ? d.highlightRadius : d.radius;
-                }).strength(1)) // Stronger collision force to prevent overlap
-                .alpha(1)
-                .alphaDecay(0.1) // Slower decay for more stable positioning
-                .velocityDecay(0.6) // Add velocity decay to dampen movement
-                .restart();
-        }
-
-        // Update circle sizes and colors
-        svg.selectAll(".leaf-circle")
-            .style("fill-opacity", d => d.opacity)
-            .attr("r", d => d.closerLook ? d.highlightRadius : d.radius);
-    }
 
     function dimNodes(svg, violationsMin, violationsMax) {
          svg.selectAll(".leaf-circle")
@@ -446,10 +371,75 @@
             .filter(d => d.violations < violationsMin || d.violations > violationsMax)
             .classed("dimmed", true);
     }
+    
+    function zoomIn(svg, nodes, circles, zoomTop = 0.4, zoomBottom = 0.6, zoomFactor = 5.2) {
+        // Define the zoom area (middle 20% of the height)
+        const zoomAreaTop = zoomTop * height;
+        const zoomAreaBottom = zoomBottom * height;
+        const zoomAreaHeight = zoomAreaBottom - zoomAreaTop;
+        
+        // Calculate the new viewBox dimensions
+        const newViewBoxHeight = height / zoomFactor;
+        const newViewBoxWidth = width / zoomFactor;
+        
+        // Calculate the center point of the zoom area
+        const zoomCenterY = (zoomAreaTop + zoomAreaBottom) / 2;
+        const zoomCenterX = width / 2;
+        
+        // Calculate the new viewBox position to center on the zoom area
+        const newViewBoxX = zoomCenterX - newViewBoxWidth / 2;
+        const newViewBoxY = zoomCenterY - newViewBoxHeight / 2;
+        
+        // Apply the zoom transformation to the SVG
+        svg.transition()
+            .duration(1000) // 1 second transition
+            .ease(d3.easeCubicInOut)
+            .attr("viewBox", `${newViewBoxX} ${newViewBoxY} ${newViewBoxWidth} ${newViewBoxHeight}`);
+            
+        // Update the simulation to focus on nodes in the zoom area
+        simulation
+            .force("x", d3.forceX(zoomCenterX).strength(0.1))
+            .force("y", d3.forceY(zoomCenterY).strength(0.1))
+            .alpha(0.3)
+            .restart();
+            
+        // Update circle positions on each tick
+        simulation.on("tick", () => {
+            circles
+                .transition()
+                .ease(d3.easeLinear)
+                .attr("cx", d => d.highlightX)
+                .attr("cy", d => d.highlightY);
+        });
+    }
+    
+    function zoomReset(svg, nodes, circles) {
+        // Reset the viewBox to show the entire visualization
+        svg.transition()
+            .duration(1000) // 1 second transition
+            .ease(d3.easeCubicInOut)
+            .attr("viewBox", `0 0 ${width} ${height}`);
+            
+        // Remove the zoom forces from the simulation
+        simulation
+            .force("x", null)
+            .force("y", null)
+            .alpha(0.3)
+            .restart();
+            
+        // Update circle positions on each tick
+        simulation.on("tick", () => {
+            circles
+                .transition()
+                .ease(d3.easeLinear)
+                .attr("cx", d => d.highlightX)
+                .attr("cy", d => d.highlightY);
+        });
+    }
 
     
     // Function to highlight groups based on current scroll section
-    function updateVisualizationHighlights() {
+    function updateVisualizationHighlights(currentSection) {
         if (!svg) return;
         
         // Reset all highlights and positions
@@ -470,17 +460,20 @@
         } else if (currentSection === 3) {
             pareBackNodes(nodes, circles);
             resetNodeOpacityRadius(svg);
+            zoomReset(svg, nodes, circles);
         } else if (currentSection === 4) {
-            packNodes(nodes, 20, 1, 1); // Scale up by 8x for better visibility of the comparison
+            pareBackNodes(nodes, circles);
+            zoomIn(svg, nodes, circles);
         } else if (currentSection === 5) {
-            packNodes(nodes, 755, 1, 1); // Scale up by 8x for better visibility of the comparison
+            zoomIn(svg, nodes, circles, 0.3, 0.7, 1.5);
+            pareBackNodesFurther(nodes, circles);
         }
     }
     
     // Effect to update visualization when section changes
     $effect(() => {
         if (currentSection !== undefined) {
-            updateVisualizationHighlights();
+            updateVisualizationHighlights(currentSection);
         }
     });
 
