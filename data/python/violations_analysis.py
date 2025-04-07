@@ -145,8 +145,18 @@ print(f"""
       """)
 
 print(f"""
+     number of drivers with 1 violation:
+     {school_zone_agg[school_zone_agg.school_zone_violations == 1].plate_id.nunique()}
+      """)
+
+print(f"""
      share of drivers with 15+ violations:
      {school_zone_agg[school_zone_agg.school_zone_violations >= 15].shape[0] / school_zone_agg.shape[0]} 
+      """)
+
+print(f"""
+     number of drivers with 15+ violations:
+     {school_zone_agg[school_zone_agg.school_zone_violations >= 15].plate_id.nunique()}
       """)
 
 print(f"""

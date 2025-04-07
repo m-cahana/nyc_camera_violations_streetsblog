@@ -20,52 +20,40 @@
 	<CirclePack />
 
     <p>
-        Extreme offenders in New York City can rack up 755 violations because, effectively, they can speed through school zones as much as they please. They're hit with a $50 fine per speeding violation, but as long as they pay their fines, they won't be taken off the road. 
+        Nearly 46,000 drivers sped enough to qualify as extreme offenders last year. Extreme offenders in New York City can rack up 755 violations because, effectively, they can speed through school zones as much as they please. They're hit with a $50 fine per speeding violation, but as long as they pay their fines, they won't be taken off the road. 
     </p>
 
 
     <p>
-        There used to be a city program in place to change behavior among extreme offenders. Dubbed the Dangerous Vehicle Abatement Program, in theory it was meant to target drivers with 15+ violations, mandating them to take a two-hour safety course. However, expired in
+        There used to be a city program in place to change behavior among extreme offenders. Dubbed the Dangerous Vehicle Abatement Program, it was meant to target drivers with 15+ violations, in theory pushing them to take a two-hour safety course. However,
         <a
         href="https://www.nyc.gov/html/dot/downloads/pdf/dvap-faq.pdf"
         target="_blank"
         rel="noopener noreferrer"
-        >2023.</a>. And even when it was active, it only required 1,600 drivers to take the
+        >it expired in 2023</a>. And even when it was active, it only required 1,600 drivers to take the
         safety course, out of the tens of thousands who were eligible. Beyond mandating a
-        safety course, the program rarely took further action; only 12 extreme offenders had their cars seized during the few years the abatement program was <a
+        safety course, the program rarely took further action; <a
         href="https://www.nyc.gov/html/dot/downloads/pdf/evaluation-of-dvap.pdf"
         target="_blank"
         rel="noopener noreferrer"
-        >active</a>; all other offenders could continue driving without truly being restrained. 
+        >only 12 extreme offenders had their cars seized</a> during the few years the abatement program was active; all other offenders could continue driving without truly being restrained. 
     </p>
     
 
     <p>
-        While the city doesn't impose serious consequences on top offenders, their driving has deadly consequences for pedestrians. In 2021, a driver with over 90 violations sped the wrong way up Gates Avenue in Fort Greene, killing a 3-month old <a
+        While the city doesn't impose serious consequences on top offenders, their driving has deadly consequences for pedestrians. In 2021, a driver with over 90 violations sped the wrong way up Gates Avenue in Fort Greene, <a
         href="https://nyc.streetsblog.org/2021/09/12/slaughter-of-the-innocents-city-in-outrage-over-brooklyn-babys-death-by-reckless-driver"
         target="_blank"
         rel="noopener noreferrer"
-        >baby.</a> In 2024, another driver with nearly 30 violations struck and killed
-        a pedestrian in <a href="https://nyc.streetsblog.org/2024/01/17/a-pedestrian-was-killed-in-dyker-heights-by-a-driver-with-a-long-record-of-recklessness"
+        >killing a 3-month old baby.</a> In 2024, another driver with nearly 30 violations <a href="https://nyc.streetsblog.org/2024/01/17/a-pedestrian-was-killed-in-dyker-heights-by-a-driver-with-a-long-record-of-recklessness"
         target="_blank"
-        rel="noopener noreferrer">Dyker Heights.</a>
+        rel="noopener noreferrer">struck and killed
+        a pedestrian in Dyker Heights.</a>
     </p>
 
     <p>
-        You can see how some top offenders rampantly speed through the city
-        in this map. Unless officials enact policy to prevent this behavior,
-        there's every reason to expect speeding patterns like these to
-        persist in New York, putting the city's children and pedestrians of
-        all kind in danger.
+        And as it stands, extreme offenders like these are speeding through the city with no restraints beyond $50 fines. They often speed through the same school zone over and over again. Consider the driver below:
     </p>
-    
-    
-    
-    
-    
-    
-    
-    
     
     
 </main>
