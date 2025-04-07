@@ -14,7 +14,7 @@
 
     <p>
         Last fiscal year, around 3 million drivers sped through school zones
-        in New York City, racking up nearly 8 million violations. Below you can see a representative sample of these drivers. Each driver is represented by a circle, whose size is proportional to the number of violations they committed.
+        in New York City, racking up nearly 8 million violations. Below you can see a representative sample of drivers with violations. Each driver is depicted as a circle, whose size is based on driver violations; the larger the circle, the more violations the driver committed. 
     </p>
 
 	<CirclePack />

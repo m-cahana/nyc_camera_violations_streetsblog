@@ -23,24 +23,24 @@
                 content: "Looking at this sample, which circles draw your attention? "
             },
             {
-                title: "Extreme Offenders",
-                content: "Probably these large ones. Each represents a driver with 15+ violations."
+                title: "",
+                content: "Probably these large ones. Each represents a driver with 15+ violations. These drivers can be considered <span class = 'extreme-offender'>extreme offenders</span>."
             },
             {
-                title: "Typical Offenders", 
-                content: `However these drivers are actually relatively rare; only 1 in 50 offenders commit 15+ violations. The typical offender you'll encounter on the street actually only commits 1 violation a year.`
+                title: "", 
+                content: `However these extreme offenders are pretty rare; only 1 in 65 offenders commit 15+ violations. The  <span class = 'typical-offender'>typical offender</span> actually only commits 1 violation a year.`
             },
             {
-                title: "Making Sense of Extreme Offenders",
-                content: "Extreme offenders are important for the same reason they capture visual attention: despite being small in number, they have an oversized impact on school zone violations. Let's look at how they compare to the typical offender."
+                title: "",
+                content: "<span class = 'extreme-offender'>Extreme offenders</span> are important for the same reason they capture visual attention: despite being small in number, they have an oversized impact on school zone violations. Let's look at how they compare to the <span class = 'typical-offender'>typical offender</span>."
             },
             {
-                title: "blah", 
-                content: "blah"
+                title: "", 
+                content: "An <span class = 'extreme-offender'>extreme offender</span> commits <span class = 'highlight-text'>20 violations a year on average</span>. Meaning one extreme offender poses as much danger as 20 <span class = 'typical-offender'>typical offenders</span>."
             },
             {
-                title: "The Most Dangerous Driver",
-                content: "The most egregious offender in our dataset was caught speeding in school zones 755 times. That's more than twice every day of the school year, consistently endangering children's lives."
+                title: "",
+                content: "And in some cases, the disparity is way larger. Last year's <span class = 'extreme-offender'>most extreme offender</span> was caught speeding in school zones <span class = 'highlight-text'>755 times</span>. That's more than twice a day on average. "
             }
         ]
     } = $props();
@@ -51,6 +51,7 @@
     
     // Scrolly state
     let currentSection = $state(0);
+    let previousSection = 0; // Track the previous section
     
     // Data processing function
     function processData(data) {
@@ -121,6 +122,8 @@
                 // Initialize x coordinate randomly, y based on violations
                 x: xPos,
                 y: yPos,
+                xOriginal: xPos,
+                yOriginal: yPos,
                 // Store target y for force
                 targetY: yScale(d.value),
                 closerLook: false
@@ -187,20 +190,6 @@
                 .attr("cx", d => d.x)
                 .attr("cy", d => d.y);
         });
-    }
-    
-    // Handle window resize
-    function handleResize() {
-        // Only re-render if we have data loaded
-        if (svg) {
-            // Adjust SVG dimensions if needed
-            svg.attr("width", width)
-               .attr("height", height);
-               
-            // Update the center point of the visualization
-            svg.select(".circle-pack-group")
-               .attr("transform", `translate(${width/2}, ${height/2 - 100})`);
-        }
     }
 
     
@@ -272,7 +261,7 @@
                     if (counter < violationExamples[0]) {
                         centerX = 0.5 * width;
                         centerY = 0.7 * height;
-                        maxRadius = 0.1 * Math.min(width, height);
+                        maxRadius = 0.09 * Math.min(width, height);
                         node.furtherSqueeze = true;
                     } else {
                         centerX = 0.5 * width;
@@ -336,21 +325,17 @@
     }
 
 
-    function simulationTickReset(simulation, circles) {
+    function simulationTickReset(simulation, nodes, circles) {
         console.log('resetting simulation')
         
-        // Remove any forces that might have been added by other functions
-        simulation
-            .force("x", null)
-            .force("y", null)
-            .force("collision", d3.forceCollide().radius(d => d.radius * 1.1).strength(1.8))
-            .alpha(0.3)
-            .restart();
+
+        nodes.forEach(node => {
+            node.x = node.xOriginal;
+            node.y = node.yOriginal;
+        });
 
         simulation.on("tick", () => {
             circles
-                .transition()
-                .ease(d3.easeLinear) // Smooth easing function
                 .attr("cx", d => d.x)
                 .attr("cy", d => d.y);
         });
@@ -456,7 +441,10 @@
             dimNodes(svg, 15, 1000000);
         } else if (currentSection === 2) {
             dimNodes(svg, 1, 1);
-            simulationTickReset(simulation, circles);
+            // Only reset simulation if coming from a higher section
+            if (previousSection > 2) {
+                simulationTickReset(simulation, nodes, circles);
+            }
         } else if (currentSection === 3) {
             pareBackNodes(nodes, circles);
             resetNodeOpacityRadius(svg);
@@ -468,6 +456,9 @@
             zoomIn(svg, nodes, circles, 0.3, 0.7, 1.5);
             pareBackNodesFurther(nodes, circles);
         }
+        
+        // Update previous section for next time
+        previousSection = currentSection;
     }
     
     // Effect to update visualization when section changes
@@ -478,8 +469,6 @@
     });
 
     onMount(() => {
-        // Add resize event listener
-        window.addEventListener('resize', handleResize);
         
         // Use our utility function to handle the path from props
         const fullDataPath = getFullPath(dataPath);
@@ -492,11 +481,6 @@
             .catch((error) => {
                 console.error("Error loading CSV:", error);
             });
-            
-        // Clean up event listeners on component destruction
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
     });
 </script>
 
@@ -580,6 +564,20 @@
         margin-right: 5%;
         pointer-events: auto; /* Re-enable mouse events for the content box */
     }
+
+    :global(.extreme-offender) {
+        background-color: var(--dark-blue);
+        color: white;
+    }
+
+    :global(.typical-offender) {
+        background-color: var(--faint-blue);
+        color: white;
+    }
+
+    :global(.highlight-text) {
+        font-weight: 600;
+    }
     
     .step-content h3 {
 		margin-top: 0;
@@ -632,15 +630,15 @@
     
     :global(.leaf-circle) {
         fill: var(--primary-blue);
-        opacity: 1;
+        opacity: 0.9;
         stroke: none;
         stroke-width: 0;
     }
     
     :global(.leaf-circle-hover) {
         fill: #182E6F;
+        stroke-width: 0.5px;
         stroke: black;
-        stroke-width: 2px;
     }
 
     
