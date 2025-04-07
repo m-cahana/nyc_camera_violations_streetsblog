@@ -1,6 +1,6 @@
 <script>
     import Footer from "$lib/components/footer.svelte";
-    import CirclePack from "$lib/components/circle_pack.svelte";
+    import Circles from "$lib/components/circles.svelte";
     import { onMount } from 'svelte';
 
     onMount(() => {
@@ -17,7 +17,7 @@
         in New York City, racking up nearly 8 million violations. Below you can see a representative sample of drivers with violations. Each driver is depicted as a circle, whose size is based on the driver's violations; the larger the circle, the more violations the driver committed. 
     </p>
 
-	<CirclePack />
+	<Circles />
 
     <p>
         Nearly 46,000 drivers sped enough to qualify as extreme offenders last year. Extreme offenders in New York City can rack up 755 violations because, effectively, they can speed through school zones as much as they please. They're hit with a $50 fine per speeding violation, but as long as they pay their fines, they won't be taken off the road. 
