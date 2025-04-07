@@ -7,7 +7,9 @@
     // define global variables
     let nodes = [];
     let simulation = null;
+    let circles = null;
     let nodeHighlight = false;
+    let nodePositionChanged = false;
 
     // Props for the component
     let {
@@ -18,23 +20,23 @@
         scrollSections = [
             {
                 title: "",
-                content: "Each circle here represents a driver caught by school zone speed cameras at least once. Circles are sized based on the driver's violation count; the more violations the driver committed, the larger the circle."
-            },
-            {
-                title: "Typical Offenders",
-                content: "The typical offender will only speed through a school zone once a year."
-            },
-            {
-                title: "Routine Offenders",
-                content: "Drivers with 3-15 violations show a more consistent pattern of disregard for school zone safety. They're a large minority, and account for most violations."
+                content: "Looking at this sample, which circles draw your attention? "
             },
             {
                 title: "Extreme Offenders",
-                content: "Drivers with 16+ violations represent the top 1% of offenders. They account for a disproportionately large share of all violations, and post the greatest threat to public safety."
+                content: "Probably these large ones. Each represents a driver with 15+ violations."
             },
             {
-                title: "A Closer Look",
-                content: "Let's visualize what it means when a single driver accumulates 20 violations - equivalent to 20 separate instances of endangering children in school zones."
+                title: "Typical Offenders", 
+                content: `However these drivers are actually relatively rare; only 1 in 50 offenders commit 15+ violations. The typical offender you'll encounter on the street actually only commits 1 violation a year.`
+            },
+            {
+                title: "Making Sense of Extreme Offenders",
+                content: "Extreme offenders are important for the same reason they capture visual attention: despite being small in number, they have an oversized impact on school zone violations."
+            },
+            {
+                title: "blah", 
+                content: "blah"
             },
             {
                 title: "The Most Dangerous Driver",
@@ -68,6 +70,10 @@
         // Sort by violation count in descending order
         return processedData.sort((a, b) => b.value - a.value);
     }
+
+    function randomNumberBetween(min, max) {
+        return Math.random() * (max - min) + min;
+    }
     
     // Function to create the circular packing visualization
     function createVisualization(data) {
@@ -90,7 +96,7 @@
             // Create a scale for y position based on violations
             const yScale = d3.scaleLog()
                 .domain([d3.min(data, d => d.value), d3.max(data, d => d.value)])
-                .range([height * 0.4, height * 0.6]);  
+                .range([height * 0.1, height * 0.8]);  
                 
             return {
                 id: d.plate_id,
@@ -104,7 +110,7 @@
                 radius: Math.sqrt(d.value) * 3,
                 // Initialize x coordinate randomly, y based on violations
                 x: Math.random() * width,
-                y: yScale(d.value),
+                y: Math.random() * height,
                 // Store target y for force
                 targetY: yScale(d.value),
                 closerLook: false
@@ -113,17 +119,14 @@
         
         // Create the force simulation
         simulation = d3.forceSimulation(nodes)
-            .force("charge", d3.forceManyBody().strength(-3))
-            .force("collision", d3.forceCollide().radius(d => d.radius * 0.9))
-            .force("x", d3.forceX(d => d.x).strength(0.2))
-            .force("y", d3.forceY(d => d.y).strength(.05));
+            .force("collision", d3.forceCollide().radius(d => d.radius * 1.1).strength(1.8))
             
         // Create a group for all the circles
         const g = svg.append("g")
             .attr("class", "circle-pack-group");
             
         // Create the circles
-        const circles = g.selectAll("circle")
+        circles = g.selectAll("circle")
             .data(nodes)
             .join("circle")
             .attr("class", "leaf-circle")
@@ -190,42 +193,168 @@
         }
     }
 
-    function resetNodes() {
-        nodeHighlight = false;
-        // Reset all node properties
-        nodes.forEach(d => {
-            d.closerLook = false;
-            // Reset to original x and y positions
-            d.x = Math.random() * width;
-            d.y = d.targetY; // Use the stored target Y position
-            // Remove highlight positions and scaling
-            delete d.highlightX;
-            delete d.highlightY;
-            delete d.highlightRadius;
-            delete d.opacity;
+    
+    function resetNodePosition(simulation, circles) {
+        console.log('resetting node positions')
+        // Update circle positions on each tick
+        simulation.on("tick", () => {
+            circles
+                .transition()
+                .ease(d3.easeLinear) // Smooth easing function
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
         });
+          
+    }
 
-        // Reset nodeHighlight flag
-        nodeHighlight = false;
+    function pareBackNodes(nodes, circles, violationExamples = [755, 20]) {
 
-        // Restart simulation with original forces but stronger parameters for faster transition
-        simulation
-            .force("charge", d3.forceManyBody().strength(-10)) // Stronger repulsion
-            .force("collision", d3.forceCollide().radius(d => d.radius * 0.9).strength(1)) // Stronger collision
-            .force("x", d3.forceX(d => d.x).strength(0.5)) // Stronger x-positioning
-            .force("y", d3.forceY(d => d.targetY).strength(0.2)) // Stronger y-positioning
-            .alpha(0.8) // Higher initial energy
-            .alphaDecay(0) // Faster decay rate
-            .restart();
+        let counter = 0;
+        nodes.filter(d => d.violations === violationExamples[0]).forEach(
+            node => {
+                if (counter >= 1) {
+                    node.highlightX = 2000;
+                    node.highlightY = 2000;
+                }
+                else {
+                    node.highlightX = 0.5 * width;
+                    node.highlightY = 0.3 * height;
+                }
+                counter++;
+            }
+        );
+
+        counter = 0;
+        nodes.filter(d => d.violations === violationExamples[1]).forEach(
+            node => {
+                if (counter >= 1) {
+                    node.highlightX = 2000;
+                    node.highlightY = 2000;
+                }
+                else {
+                    node.highlightX = 0.5 * width;
+                    node.highlightY = 0.45 * height;
+                }
+                counter++;
+            }
+        );
+
+        nodes.filter(d => d.violations !== violationExamples[0] && d.violations !== violationExamples[1] && d.violations !== 1).forEach(
+            node => {
+                node.highlightX = 2000;
+                node.highlightY = 2000;
+            }
+        );
+
+        counter = 0;
+        nodes.filter(d => d.violations === 1).forEach(
+            node => {
+                if (counter >= violationExamples[0] + violationExamples[1]) {
+                    node.highlightX = 2000;
+                    node.highlightY = 2000;
+                }
+                else {
+                    // Position nodes to fill the interior of a circle
+                    let centerX, centerY, maxRadius;
+                    
+                    if (counter < violationExamples[0]) {
+                        centerX = 0.5 * width;
+                        centerY = 0.7 * height;
+                        maxRadius = 0.1 * Math.min(width, height);
+                    } else {
+                        centerX = 0.5 * width;
+                        centerY = 0.55 * height;
+                        maxRadius = 0.01 * Math.min(width, height);
+                    }
+                    
+                    // Calculate a random radius between 0 and maxRadius
+                    const radius = Math.sqrt(Math.random()) * maxRadius;
+                    
+                    // Calculate a random angle
+                    const angle = Math.random() * 2 * Math.PI;
+                    
+                    // Calculate position within the circle
+                    node.highlightX = centerX + radius * Math.cos(angle);
+                    node.highlightY = centerY + radius * Math.sin(angle);
+                } 
+                counter++;
+            }
+        );
+
+        // Update circle positions on each tick
+        simulation.on("tick", () => {
+            circles
+                .transition()
+                .ease(d3.easeLinear) // Smooth easing function
+                .attr("cx", d => d.highlightX)
+                .attr("cy", d => d.highlightY);
+        });
+    }
+
+    function removeNodesAndGroup(nodes, circles, violationMin, violationMax, sampleShare = 0.2) {
+
+
+        // move nodes with violations inside range far away
+        nodes.filter(d => d.violations >= violationMin && d.violations <= violationMax).forEach(
+            node => {
+                node.highlightX = 2000;
+                node.highlightY = 2000;
+            });
+
             
-        // Reset circle sizes and opacity
+        // other nodes should be grouped left or right
+        nodes.filter(d => d.violations < violationMin).forEach(
+            node => {
+                if (Math.random() < sampleShare) {
+                    node.highlightX = randomNumberBetween(0.15, 0.35) * width;
+                    node.highlightY = randomNumberBetween(0.3, 0.7) * height;
+                } else {
+                    // off screen
+                    node.highlightX = 2000;
+                    node.highlightY = 2000;
+                }
+            });
+
+        nodes.filter(d => d.violations > violationMax).forEach(
+            node => {
+                if (Math.random() < sampleShare) {
+                    node.highlightX = randomNumberBetween(0.65, 0.85) * width;
+                    node.highlightY = randomNumberBetween(0.3, 0.7) * height;
+                } else {
+                    // off screen
+                    node.highlightX = 2000;
+                    node.highlightY = 2000;
+                }
+            });
+
+         // Update circle positions on each tick
+         simulation.on("tick", () => {
+            circles
+                .transition()
+                .ease(d3.easeLinear) // Smooth easing function
+                .attr("cx", d => d.highlightX)
+                .attr("cy", d => d.highlightY);
+        });
+    }
+
+    function simulationTickReset(simulation, circles) {
+        console.log('resetting simulation')
+        simulation.on("tick", () => {
+            circles
+                .transition()
+                .ease(d3.easeLinear) // Smooth easing function
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+        });
+    }
+
+    function resetNodeOpacityRadius(svg) {
         svg.selectAll(".leaf-circle")
             .style("fill-opacity", 1)
             .attr("r", d => d.radius);
     }
 
-    function HighlightNodes(nodes, largerViolations, smallerViolations, scale = 1) {
-        nodeHighlight = true;
+    function packNodes(nodes, largerViolations, smallerViolations, scale = 1) {
         // Find a node with exactly largerViolations violations
         const targetNode = nodes.find(d => d.violations === largerViolations);
                 
@@ -239,9 +368,9 @@
             
             // Move and style the target node
             targetNode.closerLook = true;
-            targetNode.highlightX = centerX;
-            targetNode.highlightY = centerY;
-            targetNode.opacity = 0.2;
+            targetNode.packX = centerX;
+            targetNode.packY = centerY;
+            targetNode.opacity = 0.7;
             targetNode.highlightRadius = targetNode.radius * scale * 1.8; // Scale up the target node by an additional 1.8
 
             const smallerNodes = nodes.filter(d => d.violations === smallerViolations).slice(0, largerViolations);
@@ -276,21 +405,21 @@
                 const randomX = Math.cos(randomAngle) * randomRadius;
                 const randomY = Math.sin(randomAngle) * randomRadius;
                 // Translate packed coordinates relative to target node center
-                originalNode.highlightX = centerX + (node.x - targetNode.highlightRadius * 0.9) + randomX;
-                originalNode.highlightY = centerY + (node.y - targetNode.highlightRadius * 0.9) + randomY;
+                originalNode.packX = centerX + (node.x - targetNode.highlightRadius * 0.9) + randomX;
+                originalNode.packY = centerY + (node.y - targetNode.highlightRadius * 0.9) + randomY;
             });
 
             // Move remaining nodes far away
             nodes.filter(d => !d.closerLook).forEach(node => {
-                node.highlightX = 2000;
-                node.highlightY = 2000;
+                node.packX = 2000;
+                node.packY = 2000;
             });
 
             // Restart simulation with modified forces
             simulation
                 .force("charge", d3.forceManyBody().strength(-10))
-                .force("x", d3.forceX(d => d.highlightX).strength(1))
-                .force("y", d3.forceY(d => d.highlightY).strength(1))
+                .force("x", d3.forceX(d => d.packX).strength(1))
+                .force("y", d3.forceY(d => d.packY).strength(1))
                 .force("collision", d3.forceCollide().radius(d => {
                     // Only apply collision radius to smaller nodes
                     // The larger node (targetNode) should not have collision detection
@@ -308,6 +437,16 @@
             .style("fill-opacity", d => d.opacity)
             .attr("r", d => d.closerLook ? d.highlightRadius : d.radius);
     }
+
+    function dimNodes(svg, violationsMin, violationsMax) {
+         svg.selectAll(".leaf-circle")
+                .filter(d => d.violations >= violationsMin && d.violations <= violationsMax)
+                .classed("dimmed", false);
+        svg.selectAll(".leaf-circle")
+            .filter(d => d.violations < violationsMin || d.violations > violationsMax)
+            .classed("dimmed", true);
+    }
+
     
     // Function to highlight groups based on current scroll section
     function updateVisualizationHighlights() {
@@ -324,42 +463,17 @@
             // No highlighting or dimming for the initial overview section
             // All circles remain at full opacity
         } else if (currentSection === 1) {
-            // Highlight single violations
-            svg.selectAll(".leaf-circle")
-                .filter(d => d.violations > 1)
-                .classed("dimmed", true);
-            svg.selectAll(".leaf-circle")
-                .filter(d => d.violations == 1)
-                .classed("dimmed", false);
-            if (nodeHighlight) {
-                resetNodes();
-            } 
+            dimNodes(svg, 15, 1000000);
         } else if (currentSection === 2) {
-            // Highlight medium violations (2-15)
-            svg.selectAll(".leaf-circle")
-                .filter(d => d.violations >= 2 && d.violations < 15)
-                .classed("dimmed", false);
-            svg.selectAll(".leaf-circle")
-                .filter(d => d.violations < 2 || d.violations > 15)
-                .classed("dimmed", true);
-            if (nodeHighlight) {
-                resetNodes();
-            } 
+            dimNodes(svg, 1, 1);
+            simulationTickReset(simulation, circles);
         } else if (currentSection === 3) {
-            // update circles with violations > 15
-            svg.selectAll(".leaf-circle")
-                .filter(d => d.violations > 15)
-                .classed("dimmed", false);
-            svg.selectAll(".leaf-circle")
-                .filter(d => d.violations <= 15)
-                .classed("dimmed", true);
-            if (nodeHighlight) {
-                resetNodes();
-            } 
+            pareBackNodes(nodes, circles);
+            resetNodeOpacityRadius(svg);
         } else if (currentSection === 4) {
-            HighlightNodes(nodes, 20, 1, 5); // Scale up by 5x for better visibility
+            packNodes(nodes, 20, 1, 1); // Scale up by 8x for better visibility of the comparison
         } else if (currentSection === 5) {
-            HighlightNodes(nodes, 755, 1, 2); // Scale up by 8x for better visibility of the comparison
+            packNodes(nodes, 755, 1, 1); // Scale up by 8x for better visibility of the comparison
         }
     }
     
@@ -408,7 +522,7 @@
             <div class="step" class:active={currentSection === i}>
                 <div class="step-content">
                     {#if section.title !== ""}<h3>{section.title}</h3>{/if}
-                    <p>{section.content}</p>
+                    <p>{@html section.content}</p>
                 </div>
             </div>
         {/each}
