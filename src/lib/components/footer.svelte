@@ -34,11 +34,13 @@
             Since violations are so numerous, they couldn't all be presented
             interactively in this project. A sample of violations from across
             the distribution of offenders is presented instead. But note that
-            all statistics displayed in this project - for example the fact that
-            50% of drivers accounted for 80% of violations, or that top
-            offenders drove mostly around Brooklyn and Queens - are drawn from
+            all statistics displayed in this project are drawn from
             the entire distribution of data, not just the small representative
             sample.
+        </p>
+
+        <p class = 'methodology'>
+            Note that a "typical offender" was selected as the the median offender in the sample, who has 1 violation. It's also true that 52% of offenders have only 1 violation, so the 1-violation offender represents not just the median but also the mode - literally the most common offender.
         </p>
     </div>
 </footer>
