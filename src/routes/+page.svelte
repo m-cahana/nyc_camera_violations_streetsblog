@@ -1,6 +1,7 @@
 <script>
     import Footer from "$lib/components/footer.svelte";
     import Circles from "$lib/components/circles.svelte";
+    import Map from "$lib/components/map.svelte";
     import { onMount } from 'svelte';
 
     onMount(() => {
@@ -20,7 +21,7 @@
 	<Circles />
 
     <p>
-        Nearly 46,000 drivers sped enough to qualify as extreme offenders last year. Extreme offenders in New York City can rack up 755 violations because, effectively, they can speed through school zones as much as they please. They're hit with a $50 fine per speeding violation, but as long as they pay their fines, they won't be taken off the road. 
+        Extreme offenders in New York City can rack up 755 violations because, effectively, they can speed through school zones as much as they please. They're hit with a $50 fine per speeding violation, but as long as they pay their fines, they won't be taken off the road. This helps explain why there were nearly 46,000 extreme offenders last year. 
     </p>
 
 
@@ -54,6 +55,8 @@
     <p>
         And as it stands, extreme offenders like these are speeding through the city with no restraints beyond $50 fines. They often speed through the same school zone over and over again. Consider the driver below:
     </p>
+
+    <Map />
     
     
 </main>

@@ -32,7 +32,7 @@ def get_lat_long(row):
 
 # ----- data read-in -----
 
-sparse_df = pd.read_csv('../processed/school_zone_violations_sparser.csv')
+sparse_df = pd.read_csv('../processed/school_zone_violations_sparse.csv')
 
 # ---- sample ----- 
 
@@ -82,3 +82,4 @@ results['issue_dt'] = pd.to_datetime(results.issue_date)
 
 # ---- output ----- 
 results.to_csv('../processed/repeat_offenders_lat_long_sample.csv', index = False)
+results.to_csv('../../static/data/repeat_offenders_lat_long_sample.csv', index = False)
