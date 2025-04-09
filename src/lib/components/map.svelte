@@ -16,7 +16,7 @@
         scrollSections = [
             {
                 title: "",
-                content: "Consider HSU6447, an <span class = 'extreme-offender'>extreme offender with an average number of violations</span>: 19. This driver's violations were all around Kew Gardens, Queens. Four violations occurred in the same school zone, by the <a href='https://www.kewkids.org/' target='_blank' rel='noopener noreferrer'>Kew Kids Forest School</a>."
+                content: "Consider HSU6447, an <span class = 'extreme-offender'>extreme offender with an average number of violations (19)</span>. This driver's violations were all around Kew Gardens, Queens. Four violations occurred in the same school zone, by the <a href='https://www.kewkids.org/' target='_blank' rel='noopener noreferrer'>Kew Kids Forest School</a>."
             },
             {
                 title: "",
@@ -24,7 +24,7 @@
             },
             {
                 title: "",
-                content: "Last year's <span class = 'extreme-offender'>most extreme offender</span> - LCM8254 - sped rampantly, but only in one borough: Brooklyn. "
+                content: "Last year's <span class = 'extreme-offender'>most extreme offender</span> - LCM8254 - sped rampantly, but only in Brooklyn. "
             },
             {
                 title: "",

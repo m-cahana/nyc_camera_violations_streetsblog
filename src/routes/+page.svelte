@@ -32,12 +32,16 @@
         target="_blank"
         rel="noopener noreferrer"
         >it expired in 2023</a>. And even when it was active, it only required 1,600 drivers to take the
-        safety course, out of the tens of thousands who were eligible. Beyond mandating a
+        safety course, out of the tens of thousands who were eligible. Many drivers who took the course continued speeding anyway. 
+    </p>
+
+    <p>
+        Beyond mandating a
         safety course, the program rarely took further action; <a
         href="https://www.nyc.gov/html/dot/downloads/pdf/evaluation-of-dvap.pdf"
         target="_blank"
         rel="noopener noreferrer"
-        >only 12 extreme offenders had their cars seized</a> during the few years the abatement program was active. All other offenders could continue driving without truly being restrained. 
+        >only 12 extreme offenders had their cars seized</a> during the few years the abatement program was active. All other offenders continued driving without truly being restrained. 
     </p>
     
 
