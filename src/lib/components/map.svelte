@@ -40,7 +40,6 @@
     
     // Component state
     let data = [];
-    let boroughsData = [];
     let processedData = [];
     let currentSection = $state(0);
     let previousSection = 0;
