@@ -306,10 +306,8 @@
         nodes.filter(d => d.furtherSqueeze).forEach(
             node => {
                 if (node.highlightY == 0.3 * height) {
-                    console.log('squeezing down')
                     node.highlightY = 0.4 * height
                 } else {
-                    console.log('squeezing up')
                     node.highlightY = node.highlightY - 0.05 * height
                 }
             }

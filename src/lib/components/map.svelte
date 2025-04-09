@@ -323,7 +323,7 @@
                     <span class="label">Plate ID:</span>
                     <select 
                         bind:value={currentPlateId} 
-                        on:change={() => mapViolationsByPlateId(currentPlateId)}
+                        onchange={() => mapViolationsByPlateId(currentPlateId)}
                     >
                         {#each uniquePlateIds as plateId}
                             <option value={plateId}>{plateId}</option>
