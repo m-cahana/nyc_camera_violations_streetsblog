@@ -21,7 +21,7 @@
 	<Circles />
 
     <p>
-        Extreme offenders in New York City can rack up 755 violations because, effectively, they can speed through school zones as much as they please. They're hit with a $50 fine per speeding violation, but as long as they pay their fines, they won't be taken off the road. This helps explain why there were nearly 46,000 extreme offenders last year. 
+        Extreme offenders in New York City commit up to 755 violations because, legally, they can speed through school zones as much as they please. They're hit with a $50 fine per speeding violation, but as long as they pay their fines, they won't be taken off the road. This helps explain why there were nearly 46,000 extreme offenders last year. 
     </p>
 
 
@@ -37,23 +37,19 @@
         href="https://www.nyc.gov/html/dot/downloads/pdf/evaluation-of-dvap.pdf"
         target="_blank"
         rel="noopener noreferrer"
-        >only 12 extreme offenders had their cars seized</a> during the few years the abatement program was active; all other offenders could continue driving without truly being restrained. 
+        >only 12 extreme offenders had their cars seized</a> during the few years the abatement program was active. All other offenders could continue driving without truly being restrained. 
     </p>
     
 
     <p>
-        While the city doesn't impose serious consequences on top offenders, their driving has deadly consequences for pedestrians. In 2021, a driver with over 90 violations sped the wrong way up Gates Avenue in Fort Greene, <a
+        While the city doesn't impose serious consequences on these offenders, their driving has deadly consequences for pedestrians. In 2021, a driver with over 90 violations sped the wrong way up Gates Avenue in Fort Greene, <a
         href="https://nyc.streetsblog.org/2021/09/12/slaughter-of-the-innocents-city-in-outrage-over-brooklyn-babys-death-by-reckless-driver"
         target="_blank"
         rel="noopener noreferrer"
         >killing a 3-month old baby.</a> In 2024, another driver with nearly 30 violations <a href="https://nyc.streetsblog.org/2024/01/17/a-pedestrian-was-killed-in-dyker-heights-by-a-driver-with-a-long-record-of-recklessness"
         target="_blank"
         rel="noopener noreferrer">struck and killed
-        a pedestrian in Dyker Heights.</a>
-    </p>
-
-    <p>
-        And as it stands, extreme offenders like these are speeding through the city with no restraints beyond $50 fines. They often speed through the same school zone over and over again. Consider the driver below:
+        a pedestrian in Dyker Heights.</a> As it stands, extreme offenders like these continue speeding through the city without strong restraints. They often speed through the same school zone over and over again. 
     </p>
 
     <Map />

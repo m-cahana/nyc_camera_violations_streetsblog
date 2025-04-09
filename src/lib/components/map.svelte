@@ -17,15 +17,15 @@
         scrollSections = [
             {
                 title: "",
-                content: "This map shows all school zone violations for a specific vehicle with multiple violations."
+                content: "Last year's most extreme offender - LCM8254 - sped throughout South Brooklyn. "
             },
             {
                 title: "",
-                content: "Each circle represents a location where this vehicle was caught speeding in a school zone. The size of the circle represents how many times the vehicle was caught at that exact location."
+                content: "But most of this driver's violations were concentrated in a few school zones around Sheepshead Bay, Gravesend, and Brighton Beach. A staggering 106 violations were commited just by Ahi Ezer Yeshiva on Ocean Parkway."
             },
             {
                 title: "", 
-                content: "This visualization helps us understand if certain vehicles repeatedly violate school zone speed limits at the same locations."
+                content: "You can toggle between a few extreme offenders using the dropdown menu above. While no one else speeds as much as LCM8254, most of these drivers still show a pattern of repeat violations in concentrated areas."
             }
         ]
     } = $props();
@@ -308,9 +308,10 @@
         } else if (currentSection === 1) {
             // Zoom in to a specific area
             currentPlateId = 'LCM8254';
-            mapViolationsByPlateId(currentPlateId, [-73.967614, 40.583684], 12.8);
+            mapViolationsByPlateId(currentPlateId, [-73.967614, 40.59], 12.8);
         } else if (currentSection === 2) {
             // Show all violations for the target plate
+            currentPlateId = 'S37RMU';
             mapViolationsByPlateId(currentPlateId);
         }
         
