@@ -44,13 +44,9 @@
     let currentSection = $state(0);
     let previousSection = 0;
     let currentPlateId = $state('HSU6447');
-    let uniquePlateIds = $state([]);
     
     // Data processing function
     function processData(rawData) {
-        // Extract unique plate IDs
-        uniquePlateIds = [...new Set(rawData.map(d => d.plate_id))].sort();
-        
         // Group violations by location (lat/long)
         const violationsByLocation = d3.group(
             rawData,
@@ -62,6 +58,7 @@
             const [lat, long] = location.split(',').map(Number);
             const firstViolation = violations[0];
             const count = violations.length;
+            // $50 fine per violation
             const totalFines = count * 50;
             
             // Format location string
@@ -467,20 +464,5 @@
         font-size: 16px;
         font-weight: 550;
         font-family: 'Helvetica', sans-serif;
-    }
-    .title-card select {
-        font-size: 16px;
-        font-weight: 550;
-        font-family: 'Helvetica', sans-serif;
-        padding: 2px 6px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        background-color: white;
-        cursor: pointer;
-    }
-    
-    .title-card select:focus {
-        outline: none;
-        border-color: rgb(56, 56, 241);
     }
 </style>
