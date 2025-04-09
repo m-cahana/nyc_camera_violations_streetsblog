@@ -91,7 +91,7 @@
                 location: titleCaseLocation,
                 totalFines: totalFines.toLocaleString('en-US', { maximumFractionDigits: 0 }),
                 // Calculate radius based on count (square root to make area proportional)
-                radius: Math.sqrt(violations.length) * 2,
+                radius: Math.sqrt(violations.length) * 3,
                 // Store the original violations for filtering
                 violations: violations
             };

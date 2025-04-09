@@ -66,7 +66,7 @@ full_df = pd.read_csv('../processed/school_zone_violations.csv')
 
 # ---- sample ----- 
 
-sample_plates = sparse_df[sparse_df.row_pct >= 0.99].plate_id.sample(10).tolist()
+sample_plates = sparse_df[sparse_df.school_zone_violations >= 15].plate_id.sample(10).tolist()
 
 # add two outliers manually
 sample_plates = list(set((
