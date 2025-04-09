@@ -12,6 +12,7 @@ def clean_times(df):
     
     df['violation_time'] = df['violation_time'].str.replace('A', 'AM').str.replace('P', 'PM')
     
+    df['issue_date'] = pd.to_datetime(df['issue_date'])
 
     df['violation_time'] = df['violation_time'].str.replace(r'^00', '12', regex=True)
 
@@ -39,11 +40,15 @@ violation_codes = violation_codes.rename(columns = {
 chunk_size = 500_000
 all_chunks = pd.DataFrame()
 for chunk in pd.read_csv('../raw/Parking_Violations_Issued_-_Fiscal_Year_2024_20250115.csv', chunksize=chunk_size):
+
     
     # clean up chunk columns and filter out blanks
     chunk = clean_cols(chunk)
     chunk = clean_times(chunk)
     chunk = chunk[chunk.plate_id != 'BLANKPLATE']
+
+    # filter to dates of last year
+    chunk = chunk[(chunk.issue_date.dt.year == 2024)]
 
     # aggregate
     agg_chunk = chunk.groupby(
@@ -113,6 +118,6 @@ all_chunks_boroughed['fines'] = np.where(
 
 # ----- save output -----
 
-all_chunks_boroughed.to_csv('../processed/parking_violations_agg.csv', index = False)
+all_chunks_boroughed.to_csv('../processed/parking_violations_agg_2024.csv', index = False)
 
 

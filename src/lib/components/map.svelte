@@ -10,7 +10,6 @@
     // Props for the component
     let {
         dataPath = '/data/repeat_offenders_lat_long_sample.csv',
-        boroughBoundariesPath = '/data/Borough Boundaries.geojson',
         width = 1200,
         height = 600,
         // Add scrolly content for sections
@@ -21,7 +20,7 @@
             },
             {
                 title: "",
-                content: "But most of this driver's violations were concentrated in a few school zones around Sheepshead Bay, Gravesend, and Brighton Beach. A staggering 106 violations were commited just by Ahi Ezer Yeshiva on Ocean Parkway."
+                content: "But most of this driver's violations were concentrated in a few school zones around Sheepshead Bay, Gravesend, and Brighton Beach. A staggering 73 violations were commited just by Ahi Ezer Yeshiva on Ocean Parkway."
             },
             {
                 title: "", 
@@ -99,15 +98,6 @@
         });
     }
 
-    async function loadBoroughs(path) {
-        const response = await fetch(getFullPath(path));
-        if (!response.ok) {
-        throw new Error("Failed to load borough boundaries.");
-        }
-        const data = await response.json();
-        return data;
-  }
-
     // Function to create the map visualization
     function createVisualization(processedData) {
         console.log("Creating map visualization with", processedData.length, "locations");
@@ -130,10 +120,6 @@
 
         // Wait for the map to load before adding data
         map.on('load', async () => {
-            boroughsData = await loadBoroughs(boroughBoundariesPath);
-
-            console.log(`boroughsData: ${boroughsData}`)
-            
             // Add a source for the violation points
             map.addSource('violations', {
                 type: 'geojson',
@@ -271,28 +257,8 @@
                         radius: d.radius
                     }
                 }))};
-
-            const filtered = {
-                type: "FeatureCollection",
-                features: [],
-            };
-
-            geojson.features.forEach((point) => {
-                // check if the point is within any borough
-                const isInside = boroughsData.features.some((borough) =>
-                    turf.booleanPointInPolygon(point, borough)
-                );
-                // only keep if inside
-                if (isInside) {
-                    console.log('inside')
-                    filtered.features.push(point);
-                } else {
-                    console.log('outside')
-                }
-            });
-
             // Use the filtered data instead of the original geojson
-            map.getSource('violations').setData(filtered);
+            map.getSource('violations').setData(geojson);
         }
     }
 
@@ -310,8 +276,8 @@
             currentPlateId = 'LCM8254';
             mapViolationsByPlateId(currentPlateId, [-73.967614, 40.59], 12.8);
         } else if (currentSection === 2) {
-            // Show all violations for the target plate
-            currentPlateId = 'S37RMU';
+            // In section 2, we don't override the plate ID from the dropdown
+            // Just use whatever is currently selected
             mapViolationsByPlateId(currentPlateId);
         }
         

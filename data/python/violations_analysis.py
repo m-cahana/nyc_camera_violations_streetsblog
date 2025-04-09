@@ -83,7 +83,7 @@ def stat_report(df, name):
 
 # ----- data read-in -----
 
-violations_agg = pd.read_csv('../processed/parking_violations_agg.csv')
+violations_agg = pd.read_csv('../processed/parking_violations_agg_2024.csv')
 
 # ---- categorize ----- 
 red_light_agg = generate_shares(violations_agg, 7).rename(

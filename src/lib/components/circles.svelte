@@ -28,7 +28,7 @@
             },
             {
                 title: "", 
-                content: `However these extreme offenders are pretty rare; only 1 in 65 offenders commit 15+ violations. The  <span class = 'typical-offender'>typical offender</span> actually only commits 1 violation a year.`
+                content: `However these extreme offenders are pretty rare; fewer than 1% of offenders commit 15+ violations. The <span class = 'typical-offender'>typical offender</span> actually only commits 1 violation a year.`
             },
             {
                 title: "",
@@ -36,11 +36,11 @@
             },
             {
                 title: "", 
-                content: "An <span class = 'extreme-offender'>extreme offender</span> commits <span class = 'highlight-text'>20 violations a year on average</span>. Meaning one extreme offender poses as much danger as 20 <span class = 'typical-offender'>typical offenders</span>."
+                content: "An <span class = 'extreme-offender'>extreme offender</span> commits <span class = 'highlight-text'>19 violations a year on average</span>. Meaning one extreme offender poses as much danger as 19 <span class = 'typical-offender'>typical offenders</span>."
             },
             {
                 title: "",
-                content: "And in some cases, the disparity is way larger. Last year's <span class = 'extreme-offender'>most extreme offender</span> was caught speeding in school zones <span class = 'highlight-text'>755 times</span>. That's more than twice a day on average. "
+                content: "And in some cases, the disparity is way larger. Last year's <span class = 'extreme-offender'>most extreme offender</span> was caught speeding in school zones <span class = 'highlight-text'>545 times</span>. That's roughly one and a half times a day on average. "
             }
         ]
     } = $props();
@@ -99,9 +99,9 @@
                 .domain([d3.min(data, d => d.value), d3.max(data, d => d.value)])
                 .range([height * 0.1, height * 0.8]);  
                 
-            // For nodes with 755 violations, constrain their position to 20-80% of width/height
+            // For nodes with 545 violations, constrain their position 
             let xPos, yPos;
-            if (d.value === 755) {
+            if (d.value === 545) {
                 xPos = randomNumberBetween(0.1, 0.9) * width;
                 yPos = randomNumberBetween(0.1, 0.9) * height;
             } else {
@@ -206,7 +206,7 @@
           
     }
 
-    function pareBackNodes(nodes, circles, violationExamples = [755, 20]) {
+    function pareBackNodes(nodes, circles, violationExamples = [545, 19]) {
 
         let counter = 0;
         nodes.filter(d => d.violations === violationExamples[0]).forEach(
@@ -231,7 +231,8 @@
                     node.highlightX = 2000;
                     node.highlightY = 2000;
                 }
-                else {
+                // force us to show specific example
+                else if (node.plate_id === 'HSU6447') {
                     node.highlightX = 0.5 * width;
                     node.highlightY = 0.45 * height;
                     node.furtherPareBack = true;
@@ -261,7 +262,7 @@
                     if (counter < violationExamples[0]) {
                         centerX = 0.5 * width;
                         centerY = 0.7 * height;
-                        maxRadius = 0.09 * Math.min(width, height);
+                        maxRadius = 0.0725 * Math.min(width, height);
                         node.furtherSqueeze = true;
                     } else {
                         centerX = 0.5 * width;

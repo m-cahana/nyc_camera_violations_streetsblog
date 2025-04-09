@@ -5,7 +5,7 @@
 
         <h2>Methodology</h2>
         <p class = 'methodology'>
-            School zone violation data for the 2024 fiscal year was sourced from
+            School zone violation data for 2024 was sourced from
             <a
               href="https://data.cityofnewyork.us/City-Government/Parking-Violations-Issued-Fiscal-Year-2024/pvqr-7yc4/about_data"
               target="_blank"
@@ -40,7 +40,7 @@
         </p>
 
         <p class = 'methodology'>
-            Note that a "typical offender" was selected as the the median offender in the sample, who has 1 violation. It's also true that 52% of offenders have only 1 violation, so the 1-violation offender represents not just the median but also the mode - literally the most common offender.
+            Note that a "typical offender" was selected as the the median offender in the sample, who has 1 violation. It's also true that 57% of offenders have only 1 violation, so the 1-violation offender represents not just the median but also the mode - literally the most common offender.
         </p>
     </div>
 </footer>

@@ -14,14 +14,14 @@
     <div class="subtitle">April 2025</div>
 
     <p>
-        Last fiscal year, around 3 million drivers sped through school zones
-        in New York City, racking up nearly 8 million violations. Below you can see a representative sample of drivers with violations. Each driver is depicted as a circle, whose size is based on the driver's violations; the larger the circle, the more violations the driver committed. 
+        In 2024, around 2 million drivers sped through school zones
+        in New York City, racking up nearly 5 million violations. Below you can see a representative sample of these drivers. Each driver is depicted as a circle, whose size is based on the driver's violations; the larger the circle, the more violations the driver committed. 
     </p>
 
 	<Circles />
 
     <p>
-        Extreme offenders in New York City commit up to 755 violations because, legally, they can speed through school zones as much as they please. They're hit with a $50 fine per speeding violation, but as long as they pay their fines, they won't be taken off the road. This helps explain why there were nearly 46,000 extreme offenders last year. 
+        Extreme offenders in New York City commit up to 545 violations because, legally, they can speed through school zones as much as they please. They're hit with a $50 fine per speeding violation, but as long as they pay their fines, they won't be taken off the road. This helps explain why there were nearly 19,000 extreme offenders last year. 
     </p>
 
 
