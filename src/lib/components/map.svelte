@@ -16,16 +16,20 @@
         scrollSections = [
             {
                 title: "",
-                content: "Last year's most extreme offender - LCM8254 - sped throughout South Brooklyn. "
+                content: "Consider HSU6447, an <span class = 'extreme-offender'>extreme offender with an average number of violations</span>: 19. This driver's violations were all around Kew Gardens, Queens. Four violations occurred in the same school zone, by the <a href='https://www.kewkids.org/' target='_blank' rel='noopener noreferrer'>Kew Kids Forest School</a>."
             },
             {
                 title: "",
-                content: "But most of this driver's violations were concentrated in a few school zones around Sheepshead Bay, Gravesend, and Brighton Beach. A staggering 73 violations were commited just by Ahi Ezer Yeshiva on Ocean Parkway."
+                content: "A driver like LDJ6948 is <span class = 'extreme-offender'>even more extreme</span> than average, with 32 violations. Again these violations were concentrated, in this case around schools bordering Jamaica Bay."
             },
             {
-                title: "", 
-                content: "You can toggle between a few extreme offenders using the dropdown menu above. While no one else speeds as much as LCM8254, most of these drivers still show a pattern of repeat violations in concentrated areas."
-            }
+                title: "",
+                content: "Last year's <span class = 'extreme-offender'>most extreme offender</span> - LCM8254 - sped rampantly, but only in one borough: Brooklyn. "
+            },
+            {
+                title: "",
+                content: "Most of this driver's violations were concentrated in just a few school zones around Sheepshead Bay, Gravesend, and Brighton Beach. A staggering <span class = 'extreme-offender'>73 violations were commited by one school</span> - <a href='https://www.ahiezeryeshiva.com/' target='_blank' rel='noopener noreferrer'>Ahi Ezer Yeshiva</a> on Ocean Parkway."
+            },
         ]
     } = $props();
 
@@ -40,7 +44,7 @@
     let processedData = [];
     let currentSection = $state(0);
     let previousSection = 0;
-    let currentPlateId = $state('LCM8254');
+    let currentPlateId = $state('HSU6447');
     let uniquePlateIds = $state([]);
     
     // Data processing function
@@ -202,7 +206,7 @@
             });
 
             // Show initial view of violations for the target plate
-            mapViolationsByPlateId('LCM8254');
+            mapViolationsByPlateId(currentPlateId);
         });
     }
 
@@ -269,16 +273,18 @@
         // Apply specific updates based on the current section
         if (currentSection === 0) {
             // Initial view - show all violations for the target plate
-            currentPlateId = 'LCM8254';
+            currentPlateId = 'HSU6447';
             mapViolationsByPlateId(currentPlateId);
         } else if (currentSection === 1) {
             // Zoom in to a specific area
+            currentPlateId = 'LDJ6948';
+            mapViolationsByPlateId(currentPlateId);
+        } else if (currentSection === 2) {
+            currentPlateId = 'LCM8254';
+            mapViolationsByPlateId(currentPlateId);
+        } else if (currentSection === 3) {
             currentPlateId = 'LCM8254';
             mapViolationsByPlateId(currentPlateId, [-73.967614, 40.59], 12.8);
-        } else if (currentSection === 2) {
-            // In section 2, we don't override the plate ID from the dropdown
-            // Just use whatever is currently selected
-            mapViolationsByPlateId(currentPlateId);
         }
         
         // Update previous section for next time
@@ -318,21 +324,7 @@
         <div class="map-container" bind:this={mapContainer} style="width: {width}px; height: {height}px;"></div>
         <!-- Title card for plate ID -->
         <div class="title-card">
-            {#if currentSection === 2}
-                <div class="dropdown-container">
-                    <span class="label">Plate ID:</span>
-                    <select 
-                        bind:value={currentPlateId} 
-                        onchange={() => mapViolationsByPlateId(currentPlateId)}
-                    >
-                        {#each uniquePlateIds as plateId}
-                            <option value={plateId}>{plateId}</option>
-                        {/each}
-                    </select>
-                </div>
-            {:else}
-                <h2>Plate ID: {currentPlateId}</h2>
-            {/if}
+            <h2>Plate ID: {currentPlateId}</h2>
         </div>
     </div>
     
@@ -477,18 +469,6 @@
         font-weight: 550;
         font-family: 'Helvetica', sans-serif;
     }
-    
-    .dropdown-container {
-        display: flex;
-        align-items: center;
-    }
-    
-    .dropdown-container .label {
-        font-size: 16px;
-        font-weight: 550;
-        font-family: 'Helvetica', sans-serif;
-    }
-    
     .title-card select {
         font-size: 16px;
         font-weight: 550;
