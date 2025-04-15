@@ -96,7 +96,7 @@ coverage/
 # DO NOT exclude data files
 !static/data/
 
-# do exclude some large datasets though
+# do exclude some large datasets though - they need git LFS to be stored
 **/Parking_Violations_Issued_-_Fiscal_Year_2024_20250115.csv
 **/school_zone_violations.csv
 **/parking_violations_agg.csv
