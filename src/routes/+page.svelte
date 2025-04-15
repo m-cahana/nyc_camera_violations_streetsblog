@@ -21,23 +21,20 @@
 	<Circles />
 
     <p>
-        Extreme offenders in New York City commit up to 545 violations a year because they can speed through school zones as much as they please. They're hit with a $50 fine per speeding violation, but as long as they pay their fines, they won't be taken off the road. This helps explain why there were nearly 19,000 extreme offenders last year. 
+        Extreme offenders in New York City commit up to 545 violations a year because they can speed through school zones as much as they please. They're hit with a $50 fine per automated violation, but as long as they pay their fines, they won't be taken off the road. This helps explain why there were nearly 19,000 extreme offenders last year. 
     </p>
 
 
     <p>
-        There used to be a city program in place to change behavior among extreme offenders. Dubbed the Dangerous Vehicle Abatement Program, it was meant to target drivers with 15+ violations, in theory pushing them to take a two-hour safety course. However,
-        <a
+        There used to be a city program in place to change behavior among extreme offenders. Dubbed the Dangerous Vehicle Abatement Program (DVAP), it targeted drivers with 15 or more violations, with the DOT allowed to order them to take a two-hour safety course. In its three years in effect, only 1,600 drivers>took the safety course, out of the tens of thousands who were eligible. Many drivers who took the course continued speeding anyway. The Adams administration and City Council allowed it to <a
         href="https://www.nyc.gov/html/dot/downloads/pdf/dvap-faq.pdf"
         target="_blank"
         rel="noopener noreferrer"
-        >it expired in 2023</a>. And even when it was active, it only required 1,600 drivers to take the
-        safety course, out of the tens of thousands who were eligible. Many drivers who took the course continued speeding anyway. 
+        >expire in 2023</a>.
     </p>
 
     <p>
-        Beyond mandating a
-        safety course, the program rarely took further action; <a
+        The program rarely took action; <a
         href="https://www.nyc.gov/html/dot/downloads/pdf/evaluation-of-dvap.pdf"
         target="_blank"
         rel="noopener noreferrer"
@@ -53,7 +50,11 @@
         >killing a 3-month old baby.</a> In 2024, another driver with nearly 30 violations <a href="https://nyc.streetsblog.org/2024/01/17/a-pedestrian-was-killed-in-dyker-heights-by-a-driver-with-a-long-record-of-recklessness"
         target="_blank"
         rel="noopener noreferrer">struck and killed
-        a pedestrian in Dyker Heights.</a> As it stands, extreme offenders like these continue speeding through the city, often speeding through the same school zone over and over again. 
+        a pedestrian in Dyker Heights.</a>. Just last month, in March 2025, another extreme offender who would have been subject to DVAP struck a family on Ocean Parkway in Brooklyn, <a href = "https://nyc.streetsblog.org/2025/03/29/slaughter-of-the-innocents-recidivist-speeder-kills-three" target="_blank" rel="noopener noreferrer">killing a mother and two children</a>.
+    </p>
+
+    <p>
+        As it stands, extreme offenders like these continue speeding through the city, often speeding through the same school zone over and over again. 
     </p>
 
     <Map />

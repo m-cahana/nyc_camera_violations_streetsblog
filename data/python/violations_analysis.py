@@ -170,6 +170,8 @@ stat_report(school_zone_agg, 'all drivers')
 
 # ----- top stats -----
 
+stat_report(school_zone_agg[school_zone_agg.row_pct >= 0.9], 'top 10% of drivers')
+
 stat_report(school_zone_agg[school_zone_agg.row_pct >= 0.95], 'top 5% of drivers')
 
 stat_report(school_zone_agg[school_zone_agg.row_pct >= 0.98], 'top 2% of drivers')
