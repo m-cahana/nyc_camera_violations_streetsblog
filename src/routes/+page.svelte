@@ -26,7 +26,7 @@
 
 
     <p>
-        There used to be a city program in place to change behavior among extreme offenders. Dubbed the Dangerous Vehicle Abatement Program (DVAP), it targeted drivers with 15 or more violations, with the DOT allowed to order them to take a two-hour safety course. In its three years in effect, only 1,600 drivers>took the safety course, out of the tens of thousands who were eligible. Many drivers who took the course continued speeding anyway. The Adams administration and City Council allowed it to <a
+        There used to be a city program in place to change behavior among extreme offenders. Dubbed the Dangerous Vehicle Abatement Program (DVAP), it targeted drivers with 15 or more violations, with the DOT allowed to order them to take a two-hour safety course. In its three years in effect, only 1,600 drivers took the safety course, out of the tens of thousands who were eligible. Many drivers who took the course continued speeding anyway. The Adams administration and City Council allowed it to <a
         href="https://www.nyc.gov/html/dot/downloads/pdf/dvap-faq.pdf"
         target="_blank"
         rel="noopener noreferrer"
@@ -50,7 +50,7 @@
         >killing a 3-month old baby.</a> In 2024, another driver with nearly 30 violations <a href="https://nyc.streetsblog.org/2024/01/17/a-pedestrian-was-killed-in-dyker-heights-by-a-driver-with-a-long-record-of-recklessness"
         target="_blank"
         rel="noopener noreferrer">struck and killed
-        a pedestrian in Dyker Heights.</a>. Just last month, in March 2025, another extreme offender who would have been subject to DVAP struck a family on Ocean Parkway in Brooklyn, <a href = "https://nyc.streetsblog.org/2025/03/29/slaughter-of-the-innocents-recidivist-speeder-kills-three" target="_blank" rel="noopener noreferrer">killing a mother and two children</a>.
+        a pedestrian in Dyker Heights</a>. Just last month, in March 2025, another extreme offender who would have been subject to DVAP struck a family on Ocean Parkway in Brooklyn, <a href = "https://nyc.streetsblog.org/2025/03/29/slaughter-of-the-innocents-recidivist-speeder-kills-three" target="_blank" rel="noopener noreferrer">killing a mother and two children</a>.
     </p>
 
     <p>
