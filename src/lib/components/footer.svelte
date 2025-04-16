@@ -1,7 +1,7 @@
 <footer>
     <div class="line"></div>
     <div class="footer-content">
-        <p class = 'attribution'>Created by Michael Cahana. All code for this project can be viewed on <a href = 'https://github.com/m-cahana/nyc_camera_violations_streetsblog' target="_blank" rel="noopener noreferrer" >GitHub</a>.</p>
+        <p class = 'attribution'>Created by <a href = 'https://www.michaelcahana.com' target="_blank" rel="noopener noreferrer" >Michael Cahana</a>. All code for this project can be viewed on <a href = 'https://github.com/m-cahana/nyc_camera_violations_streetsblog' target="_blank" rel="noopener noreferrer" >GitHub</a>.</p>
 
         <h2>Methodology</h2>
         <p class = 'methodology'>
